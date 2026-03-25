@@ -1,4 +1,4 @@
-package com.myname.marketplace_product_parser;
+package com.ymidianyi.marketplace.product.parser;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

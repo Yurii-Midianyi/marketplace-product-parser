@@ -1,4 +1,4 @@
-package com.myname.marketplace_product_parser;
+package com.ymidianyi.marketplace.product.parser;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
