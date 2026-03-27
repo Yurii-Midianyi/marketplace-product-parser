@@ -1,1 +1,1 @@
-# marketplace_product_parser
+# marketplace-product-parser
