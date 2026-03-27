@@ -1,0 +1,12 @@
+spring:
+  application:
+    name:marketplace-product-parser
+
+file-processing:
+  input-dir: "src/main/resources/static/input-folder"
+  processed-dir: "src/main/resources/static/processed-folder"
+  failed-dir: "src/main/resources/static/failed-folder"
+  cron: "* */5 * * * *"
+  thread-pool-size: 10,
+  max-export-age-days: 30
+
