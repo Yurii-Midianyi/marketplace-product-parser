@@ -2,6 +2,9 @@ package com.ymidianyi.marketplace.product.parser.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,6 +38,14 @@ public class FileProcessingProperties {
 
     @PostConstruct
     public void init(){
+        try {
+            Files.createDirectories(Path.of(inputDir));
+            Files.createDirectories(Path.of(processedDir));
+            Files.createDirectories(Path.of(failedDir));
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
         System.out.println(inputDir);
         System.out.println(processedDir);
         System.out.println(failedDir);
