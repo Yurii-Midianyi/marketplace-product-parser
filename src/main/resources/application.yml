@@ -3,9 +3,9 @@ spring:
     name:marketplace-product-parser
 
 file-processing:
-  input-dir: "C:/myData/marketplace-product-parser/data/input-folder"
-  processed-dir: "C:/myData/marketplace-product-parser/data/processed-folder"
-  failed-dir: "C:/myData/marketplace-product-parser/data/failed-folder"
+  input-dir: "data/input-folder"
+  processed-dir: "data/processed-folder"
+  failed-dir: "data/failed-folder"
   cron: "* */5 * * * *"
   thread-pool-size: 10
   max-export-age-days: 30
