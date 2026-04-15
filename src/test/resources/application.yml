@@ -1,0 +1,26 @@
+spring:
+  profiles:
+    active: test
+  application:
+    name: marketplace-product-parser-test
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  h2:
+    console:
+      enabled: false
+
+file-processing:
+  input-dir: "target/test-data/input"
+  processed-dir: "target/test-data/processed"
+  failed-dir: "target/test-data/failed"
+  cron: "0 0 0 31 12 ?"
+  thread-pool-size: 2
+  max-export-age-days: 30

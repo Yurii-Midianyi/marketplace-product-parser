@@ -1,24 +1,50 @@
 package com.ymidianyi.marketplace.product.parser.config;
 
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.cfg.MapperBuilder;
+import tools.jackson.dataformat.csv.CsvMapper;
 
 @Configuration
 public class JacksonConfig {
 
+    //   @Autowired ObjectMapper mapper will create auto-configured JsonMapper
+    //   @Autowired @Qualifier("csvObjectMapper") ObjectMapper mapper CsvMapper
     @Bean
-    @Primary//throws an error
-    public ObjectMapper jsonObjectMapper() {
-        return JsonMapper.builder()
-                // In Jackson 3, standard modules are often pre-registered,
-                // but you can explicitly ensure standard Java 8+ types are handled:
+    public JsonMapperBuilderCustomizer jsonCustomizer() {
+        return MapperBuilder::findAndAddModules;
+    }
+
+    @Bean
+    public ObjectMapper csvObjectMapper() {
+        return CsvMapper.builder()
                 .findAndAddModules()
                 .build();
     }
-
 }
 
+
+//     @Bean
+//     @Primary
+//     //@Qualifier("jsonObjectMapper") - візьме з назви метода
+//     public JsonMapper jsonObjectMapper() {       // return JsonMapper
+//         return JsonMapper.builder()
+//                 .findAndAddModules()
+//                 .build();
+//     }
+//
+//     @Bean
+//     //@Qualifier("csvObjectMapper") - візьме з назви метода
+//     public ObjectMapper csvObjectMapper() {
+//         return CsvMapper.builder()
+//                 .findAndAddModules()
+//                 .build();
+//     }
+// }
+
+//   @Autowired ObjectMapper mapper - jsonObjectMapper (@Primary)
+//   @Autowired @Qualifier("jsonObjectMapper") ObjectMapper mapper - jsonObjectMapper
+//   @Autowired @Qualifier("csvObjectMapper") ObjectMapper mapper - csvObjectMapper

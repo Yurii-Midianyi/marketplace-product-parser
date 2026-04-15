@@ -68,6 +68,10 @@
             <version>1.18.44</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>tools.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-csv</artifactId>
+        </dependency>
         <!-- h2 will be changed to Postgres in the future-->
         <dependency>
             <groupId>com.h2database</groupId>
@@ -78,6 +82,21 @@
 
 	<build>
 		<plugins>
+			<plugin>
+<!--				seems project lombok's annotation processor was not working,
+					add the configuration for maven-compiler-plugin -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>1.18.44</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
