@@ -1,0 +1,19 @@
+{
+  "partnerId": "PARTNER-A",
+  "exportDate": "2026-03-23T10:30:00Z",
+  "products": [
+    {
+      "name": "Apple Fruit",
+      "sku": "802999",
+      "price": 41238.0,
+      "specialPrice": 35000.0,
+      "specialFrom": "2026-03-01",
+      "specialTo": "2026-04-01",
+      "state": "ACTIVE",
+      "brand": "Shelf 3",
+      "categories": ["Golden apple Bundles"],
+      "imageUrl": "https://img.example.com/apple.jpg"
+    }
+  ]
+}
+
