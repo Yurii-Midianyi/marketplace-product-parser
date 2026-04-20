@@ -1,39 +1,24 @@
 package com.ymidianyi.marketplace.product.parser.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
+@Getter
+@Setter
 @ConfigurationProperties(prefix = "file-processing")
 public class FileProcessingProperties {
-
-    @Getter
-    @Setter
     private String inputDir;
-
-    @Getter
-    @Setter
     private String processedDir;
-
-    @Getter
-    @Setter
     private String failedDir;
-
-    @Getter
-    @Setter
     private String cron;
-
-    @Getter
-    @Setter
     private int threadPoolSize;
-
-    @Getter
-    @Setter
     private int maxExportAgeDays;
 
     @PostConstruct
@@ -44,13 +29,13 @@ public class FileProcessingProperties {
             Files.createDirectories(Path.of(failedDir));
         }
         catch (IOException e){
-            e.printStackTrace();
+            log.error(String.valueOf(e));
         }
-        System.out.println(inputDir);
-        System.out.println(processedDir);
-        System.out.println(failedDir);
-        System.out.println(cron);
-        System.out.println(threadPoolSize);
-        System.out.println(maxExportAgeDays);
+        if(Files.notExists(Path.of(processedDir)) || Files.notExists(Path.of(failedDir)) || Files.notExists(Path.of(inputDir))){
+            log.error("Initial folders were not created during startup");
+            throw new RuntimeException("Initial folders were not created during startup");
+        }
+        log.info("inputDir - {}, processedDir - {}, failedDir - {}, cron - {}, threadPoolSize- {}, maxExportAgeDays - {}",
+                inputDir, processedDir, failedDir, cron, threadPoolSize, maxExportAgeDays);
     }
 }
