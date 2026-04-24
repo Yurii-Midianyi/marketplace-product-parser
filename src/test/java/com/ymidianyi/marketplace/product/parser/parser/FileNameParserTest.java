@@ -20,7 +20,7 @@ public class FileNameParserTest {
 
     @Test
     public void testParseFileNameWrongRegex(){
-        Path path = Path.of("someFoleder/failedName_2026-04-01.csv");
+        Path path = Path.of("someFolder/failedName_2026-04-01.csv");
         assertThatThrownBy(()->fileNameParser.parseFileName(path))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Invalid file name");
