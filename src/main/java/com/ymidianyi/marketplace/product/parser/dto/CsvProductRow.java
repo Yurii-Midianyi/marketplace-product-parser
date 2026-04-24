@@ -2,11 +2,9 @@ package com.ymidianyi.marketplace.product.parser.dto;
 
 import com.ymidianyi.marketplace.product.parser.model.ProductState;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDate;
 
-public record CsvProductRow (Long id,
-                             String name,
+public record CsvProductRow (String name,
                              String sku,
                              BigDecimal price,
                              BigDecimal specialPrice,
@@ -15,8 +13,5 @@ public record CsvProductRow (Long id,
                              ProductState state,
                              String brand,
                              String category,
-                             String imageUrl,
-                             String partnerId,
-                             String sourceFileName,
-                             Instant importedAt){
+                             String imageUrl){
 }

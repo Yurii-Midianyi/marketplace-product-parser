@@ -1,7 +1,7 @@
 package com.ymidianyi.marketplace.product.parser.parser;
 
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
-import com.ymidianyi.marketplace.product.parser.scanner.FileParser;
+
 import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.file.Path;

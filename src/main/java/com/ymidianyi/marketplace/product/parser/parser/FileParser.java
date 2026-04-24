@@ -1,4 +1,4 @@
-package com.ymidianyi.marketplace.product.parser.scanner;
+package com.ymidianyi.marketplace.product.parser.parser;
 
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
 

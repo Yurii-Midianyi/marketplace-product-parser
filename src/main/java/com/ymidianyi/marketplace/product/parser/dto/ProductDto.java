@@ -4,6 +4,7 @@ import com.ymidianyi.marketplace.product.parser.model.ProductState;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 public record ProductDto(String name,
                          String sku,
@@ -13,6 +14,6 @@ public record ProductDto(String name,
                          LocalDate specialTo,
                          ProductState state,
                          String brand,
-                         String category,
+                         List<String> category,
                          String imageUrl) {
 }
