@@ -14,6 +14,6 @@ public record ProductDto(String name,
                          LocalDate specialTo,
                          ProductState state,
                          String brand,
-                         List<String> category,
+                         List<String> categories,
                          String imageUrl) {
 }
