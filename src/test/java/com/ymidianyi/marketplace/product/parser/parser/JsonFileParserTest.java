@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -21,8 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class JsonFileParserTest {
 
-    ObjectMapper mapper = new JsonMapper();
-    private JsonFileParser parser = new JsonFileParser(mapper);
+    private final ObjectMapper mapper = new JsonMapper();
+    private final JsonFileParser parser = new JsonFileParser(mapper);
 
     private Path getResourcePath(String resourceName) throws URISyntaxException {
         return Path.of(Objects.requireNonNull(
