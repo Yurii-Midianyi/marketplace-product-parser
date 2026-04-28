@@ -1,4 +1,4 @@
-    package com.ymidianyi.marketplace.product.parser.parser;
+package com.ymidianyi.marketplace.product.parser.parser;
 
 import com.ymidianyi.marketplace.product.parser.exception.UnsupportedFileFormatException;
 

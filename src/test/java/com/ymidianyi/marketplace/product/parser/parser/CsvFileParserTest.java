@@ -1,25 +1,44 @@
 package com.ymidianyi.marketplace.product.parser.parser;
 
+import com.ymidianyi.marketplace.product.parser.dto.FileNameMetadata;
 import com.ymidianyi.marketplace.product.parser.dto.ProductDto;
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
 import com.ymidianyi.marketplace.product.parser.model.ProductState;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 public class CsvFileParserTest {
 
     @Autowired
     private CsvFileParser parser;
+
+    @MockitoBean
+    private FileNameParser fileNameParser;
+
+    private FileNameMetadata fileNameMetadata;
+
+    @BeforeEach
+    public void setup() {
+        LocalDate date = LocalDate.parse("2026-04-28");
+        fileNameMetadata = new FileNameMetadata("Partner-G", date);
+    }
 
     private Path getResourcePath(String subdir) throws URISyntaxException {
         return Paths.get(Objects.requireNonNull(
@@ -37,6 +56,7 @@ public class CsvFileParserTest {
 
     @Test
     public void testParseFullyPopulatedData() throws URISyntaxException, IOException {
+        when(fileNameParser.parseFileName(any(Path.class))).thenReturn(fileNameMetadata);
         ProductExportFileDto exportFileDto = parser.parse(getResourcePath("all-fields"));
         assertThat(exportFileDto).isNotNull();
         List<ProductDto> products = exportFileDto.products();
@@ -57,6 +77,7 @@ public class CsvFileParserTest {
 
     @Test
     public void testParsingWithMissingData() throws URISyntaxException, IOException {
+        when(fileNameParser.parseFileName(any(Path.class))).thenReturn(fileNameMetadata);
         ProductExportFileDto exportFileDto = parser.parse(getResourcePath("minimal"));
         assertThat(exportFileDto).isNotNull();
         List<ProductDto> products = exportFileDto.products();
@@ -77,6 +98,7 @@ public class CsvFileParserTest {
 
     @Test
     public void testParsingMultipleRows() throws URISyntaxException, IOException {
+        when(fileNameParser.parseFileName(any(Path.class))).thenReturn(fileNameMetadata);
         ProductExportFileDto exportFileDto = parser.parse(getResourcePath("multiple-rows"));
         assertThat(exportFileDto).isNotNull();
         assertThat(exportFileDto.products()).hasSize(3);
@@ -87,10 +109,21 @@ public class CsvFileParserTest {
 
     @Test
     public void testSingleCategoryIsInList() throws URISyntaxException, IOException {
+        when(fileNameParser.parseFileName(any(Path.class))).thenReturn(fileNameMetadata);
         ProductExportFileDto exportFileDto = parser.parse(getResourcePath("single-category"));
 
         assertThat(exportFileDto.products().getFirst().categories()).hasSize(1);
         assertThat(exportFileDto.products().getFirst().categories()).containsExactly("Drinks");
 
+    }
+
+    @Test
+    public void testParseOfTheFileName() throws URISyntaxException, IOException {
+        when(fileNameParser.parseFileName(any(Path.class))).thenReturn(fileNameMetadata);
+
+        ProductExportFileDto exportFileDto = parser.parse(getResourcePath("single-category"));
+        assertThat(exportFileDto).isNotNull();
+        assertThat(exportFileDto.partnerId()).isEqualTo("Partner-G");
+        assertThat(exportFileDto.exportDate()).isEqualTo(LocalDate.parse("2026-04-28").atStartOfDay(ZoneOffset.UTC).toInstant());
     }
 }
