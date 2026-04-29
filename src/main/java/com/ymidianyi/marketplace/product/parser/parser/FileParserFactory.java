@@ -9,13 +9,13 @@ import java.util.List;
 @Component
 public class FileParserFactory {
 
-    List<FileParser> fileParsers;
+    private final List<FileParser> fileParsers;
 
     public FileParserFactory(List<FileParser> fileParsers) {
         this.fileParsers = fileParsers;
     }
 
-    FileParser getParser(String extension){
+    public FileParser getParser(String extension){
         return fileParsers.stream()
                 .filter(obj -> obj.supports(extension))
                 .findFirst()

@@ -4,6 +4,7 @@ import com.ymidianyi.marketplace.product.parser.dto.CsvProductRow;
 import com.ymidianyi.marketplace.product.parser.dto.FileNameMetadata;
 import com.ymidianyi.marketplace.product.parser.dto.ProductDto;
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
+import com.ymidianyi.marketplace.product.parser.exception.CsvParsingException;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.MappingIterator;
 import tools.jackson.dataformat.csv.CsvSchema;
 import tools.jackson.databind.ObjectMapper;
@@ -59,7 +61,7 @@ public class CsvFileParser implements FileParser {
         return fileExtension.equalsIgnoreCase("csv");
     }
 
-    protected List<ProductDto> getProductsFromCsv(Path file) {
+    private List<ProductDto> getProductsFromCsv(Path file) {
         try (MappingIterator<CsvProductRow> iterator = csvMapper
                 .readerFor(CsvProductRow.class)
                 .with(CSV_SCHEMA)
@@ -68,6 +70,9 @@ public class CsvFileParser implements FileParser {
             return iterator.readAll().stream()
                     .map(this::toProductDto)
                     .toList();
+        } catch (JacksonException e) {
+            log.error("Failed to parse CSV file {}: {}", file.getFileName(), e.getMessage());
+            throw new CsvParsingException("Failed to parse CSV file: " + file.getFileName(), e);
         }
     }
 

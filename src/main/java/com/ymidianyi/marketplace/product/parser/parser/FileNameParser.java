@@ -12,9 +12,10 @@ import java.util.regex.Pattern;
 @Component
 public class FileNameParser {
 
+    private final String regex = "^products_([A-Za-z0-9-]+)_(\\d{4}-\\d{2}-\\d{2})\\.csv$";
+
     public FileNameMetadata parseFileName(Path file){
         String fileName = file.getFileName().toString();
-        String regex = "^products_([A-Za-z0-9-]+)_(\\d{4}-\\d{2}-\\d{2})\\.csv$";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(fileName);
         if (matcher.matches()) {
