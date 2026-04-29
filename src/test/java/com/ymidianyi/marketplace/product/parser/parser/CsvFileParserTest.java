@@ -2,12 +2,14 @@ package com.ymidianyi.marketplace.product.parser.parser;
 
 import com.ymidianyi.marketplace.product.parser.dto.ProductDto;
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
+import com.ymidianyi.marketplace.product.parser.exception.CsvParsingException;
 import com.ymidianyi.marketplace.product.parser.model.ProductState;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import tools.jackson.core.JacksonException;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -17,23 +19,14 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Objects;
 
-import tools.jackson.dataformat.csv.CsvMapper;
-import tools.jackson.dataformat.csv.CsvReadFeature;
-
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@SpringBootTest
 class CsvFileParserTest {
 
+    @Autowired
     private CsvFileParser parser;
-
-    @BeforeEach
-    void setUp() {
-        var csvMapper = CsvMapper.builder()
-                .findAndAddModules()
-                .enable(CsvReadFeature.EMPTY_STRING_AS_NULL)
-                .build();
-        parser = new CsvFileParser(csvMapper, new FileNameParser());
-    }
 
     private Path getResourcePath(String subdir) throws URISyntaxException {
         return Paths.get(Objects.requireNonNull(
@@ -55,7 +48,7 @@ class CsvFileParserTest {
     }
 
     @Test
-    void shouldExtractPartnerIdAndExportDateFromFileName() throws IOException, URISyntaxException {
+    void shouldExtractPartnerIdAndExportDateFromFileName() throws URISyntaxException {
         Path file = getResourcePath("minimal");
 
         ProductExportFileDto result = parser.parse(file);
@@ -67,7 +60,7 @@ class CsvFileParserTest {
     }
 
     @Test
-    void shouldParseAllFieldsCorrectly() throws IOException, URISyntaxException {
+    void shouldParseAllFieldsCorrectly() throws URISyntaxException {
         Path file = getResourcePath("all-fields");
 
         ProductExportFileDto result = parser.parse(file);
@@ -86,7 +79,7 @@ class CsvFileParserTest {
     }
 
     @Test
-    void shouldHandleEmptyOptionalFields() throws IOException, URISyntaxException {
+    void shouldHandleEmptyOptionalFields() throws URISyntaxException {
         Path file = getResourcePath("empty-optional", "PARTNER-B", "2026-03-20");
 
         ProductExportFileDto result = parser.parse(file);
@@ -100,7 +93,7 @@ class CsvFileParserTest {
     }
 
     @Test
-    void shouldWrapSingleCategoryIntoList() throws IOException, URISyntaxException {
+    void shouldWrapSingleCategoryIntoList() throws URISyntaxException {
         Path file = getResourcePath("single-category");
 
         ProductExportFileDto result = parser.parse(file);
@@ -110,7 +103,7 @@ class CsvFileParserTest {
     }
 
     @Test
-    void shouldParseMultipleRows() throws IOException, URISyntaxException {
+    void shouldParseMultipleRows() throws URISyntaxException {
         Path file = getResourcePath("multiple-rows");
 
         ProductExportFileDto result = parser.parse(file);
@@ -119,5 +112,15 @@ class CsvFileParserTest {
         assertThat(result.products().get(0).name()).isEqualTo("Banana Fruit");
         assertThat(result.products().get(1).name()).isEqualTo("Strawberry F");
         assertThat(result.products().get(2).name()).isEqualTo("Watermelon");
+    }
+
+    @Test
+    void shouldThrowCsvParsingExceptionOnMalformedContent() throws URISyntaxException {
+        Path file = getResourcePath("malformed");
+
+        assertThatThrownBy(() -> parser.parse(file))
+                .isInstanceOf(CsvParsingException.class)
+                .hasMessageContaining("products_PARTNER-A_2026-03-23.csv")
+                .hasCauseInstanceOf(JacksonException.class);
     }
 }

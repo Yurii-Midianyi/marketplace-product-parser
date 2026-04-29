@@ -47,4 +47,11 @@ class FileNameParserTest {
         assertThatThrownBy(() -> parser.parse("products_PARTNER-A.csv"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void shouldThrowForFileNameWithInvalidDate() {
+        assertThatThrownBy(() -> parser.parse("products_PARTNER-A_2026-99-99.csv"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("2026-99-99");
+    }
 }

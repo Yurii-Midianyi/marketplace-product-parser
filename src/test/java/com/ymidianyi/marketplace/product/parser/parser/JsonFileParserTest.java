@@ -2,12 +2,13 @@ package com.ymidianyi.marketplace.product.parser.parser;
 
 import com.ymidianyi.marketplace.product.parser.dto.ProductDto;
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
+import com.ymidianyi.marketplace.product.parser.exception.JsonParsingException;
 import com.ymidianyi.marketplace.product.parser.model.ProductState;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -16,19 +17,14 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Objects;
 
-import tools.jackson.databind.json.JsonMapper;
-
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@SpringBootTest
 class JsonFileParserTest {
 
+    @Autowired
     private JsonFileParser parser;
-
-    @BeforeEach
-    void setUp() {
-        var objectMapper = JsonMapper.builder().findAndAddModules().build();
-        parser = new JsonFileParser(objectMapper);
-    }
 
     private Path getResourcePath(String resourceName) throws URISyntaxException {
         return Paths.get(Objects.requireNonNull(
@@ -44,7 +40,7 @@ class JsonFileParserTest {
     }
 
     @Test
-    void shouldParseValidJsonWithAllFields() throws IOException, URISyntaxException {
+    void shouldParseValidJsonWithAllFields() throws URISyntaxException {
         Path file = getResourcePath("valid_all_fields.json");
 
         ProductExportFileDto result = parser.parse(file);
@@ -67,7 +63,7 @@ class JsonFileParserTest {
     }
 
     @Test
-    void shouldParseJsonWithOptionalFieldsNull() throws IOException, URISyntaxException {
+    void shouldParseJsonWithOptionalFieldsNull() throws URISyntaxException {
         Path file = getResourcePath("valid_minimal_fields.json");
 
         ProductExportFileDto result = parser.parse(file);
@@ -79,5 +75,15 @@ class JsonFileParserTest {
         assertThat(product.brand()).isNull();
         assertThat(product.imageUrl()).isNull();
         assertThat(product.categories()).isEmpty();
+    }
+
+    @Test
+    void shouldThrowJsonParsingExceptionOnMalformedContent() throws URISyntaxException {
+        Path file = getResourcePath("malformed.json");
+
+        assertThatThrownBy(() -> parser.parse(file))
+                .isInstanceOf(JsonParsingException.class)
+                .hasMessageContaining("malformed.json")
+                .hasCauseInstanceOf(tools.jackson.core.JacksonException.class);
     }
 }
