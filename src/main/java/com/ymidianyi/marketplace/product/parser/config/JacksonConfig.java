@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import tools.jackson.databind.cfg.MapperBuilder;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.csv.CsvMapper;
+import tools.jackson.dataformat.csv.CsvReadFeature;
 
 @Configuration
 public class JacksonConfig {
@@ -19,6 +20,7 @@ public class JacksonConfig {
     public ObjectMapper csvObjectMapper() {
         return CsvMapper.builder()
                 .findAndAddModules()
+                .enable(CsvReadFeature.EMPTY_STRING_AS_NULL)
                 .build();
     }
 }

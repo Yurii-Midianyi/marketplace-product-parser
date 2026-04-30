@@ -1,0 +1,14 @@
+{
+  "partnerId": "PARTNER-B",
+  "exportDate": "2026-03-20T08:00:00Z",
+  "products": [
+    {
+      "name": "Banana Fruit",
+      "sku": "000000001",
+      "price": 180.0,
+      "state": "ACTIVE",
+      "categories": []
+    }
+  ]
+}
+
