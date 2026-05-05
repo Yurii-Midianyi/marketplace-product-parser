@@ -7,4 +7,3 @@ public class JsonParsingException extends RuntimeException {
     }
 
 }
-
