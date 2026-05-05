@@ -8,6 +8,7 @@ import com.ymidianyi.marketplace.product.parser.model.ProductState;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import tools.jackson.core.JacksonException;
 
 import java.math.BigDecimal;
 import java.net.URISyntaxException;
@@ -84,6 +85,6 @@ class JsonFileParserTest {
         assertThatThrownBy(() -> parser.parse(file))
                 .isInstanceOf(JsonParsingException.class)
                 .hasMessageContaining("malformed.json")
-                .hasCauseInstanceOf(tools.jackson.core.JacksonException.class);
+                .hasCauseInstanceOf(JacksonException.class);
     }
 }
