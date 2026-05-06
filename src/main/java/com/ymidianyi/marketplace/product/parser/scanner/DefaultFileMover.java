@@ -22,7 +22,7 @@ public class DefaultFileMover implements FileMover {
     }
 
     @Override
-    public Path moveToProcessed(Path file) {
+    public void moveToProcessed(Path file) {
         if(!Files.isDirectory(file)){
             throw new IllegalArgumentException(file.toString() + " is not a directory");
         }
@@ -32,11 +32,10 @@ public class DefaultFileMover implements FileMover {
             log.info("{} failed to be moved", file);
             throw new RuntimeException(e);
         }
-        return Path.of(properties.getProcessedDir());
     }
 
     @Override
-    public Path moveToFailed(Path file, String errorMessage) {
+    public void moveToFailed(Path file, String errorMessage) {
         if(!Files.isDirectory(file)){
             throw new IllegalArgumentException(file.toString() + " is not a directory");
         }
@@ -48,7 +47,5 @@ public class DefaultFileMover implements FileMover {
             log.info("{} failed to be moved", file);
             throw new RuntimeException(e);
         }
-
-        return null;
     }
 }

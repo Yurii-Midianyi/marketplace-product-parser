@@ -3,7 +3,7 @@ package com.ymidianyi.marketplace.product.parser.scanner;
 import java.nio.file.Path;
 
 public interface FileMover {
-    Path moveToProcessed(Path file);
-    Path moveToFailed(Path file, String errorMessage);
+    void moveToProcessed(Path file);
+    void moveToFailed(Path file, String errorMessage);
 
 }
