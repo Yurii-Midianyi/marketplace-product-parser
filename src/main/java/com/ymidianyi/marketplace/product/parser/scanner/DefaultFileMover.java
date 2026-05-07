@@ -23,11 +23,12 @@ public class DefaultFileMover implements FileMover {
 
     @Override
     public void moveToProcessed(Path file) {
-        if(!Files.isDirectory(file)){
-            throw new IllegalArgumentException(file.toString() + " is not a directory");
+        if(Files.isDirectory(file)){
+            throw new IllegalArgumentException(file.toString() + " is not a file");
         }
         try {
-            Files.move(file, Path.of(properties.getProcessedDir()), StandardCopyOption.REPLACE_EXISTING);
+            Path target = Path.of(properties.getProcessedDir()).resolve(file.getFileName());
+            Files.move(file, target, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             log.info("{} failed to be moved", file);
             throw new RuntimeException(e);
@@ -36,12 +37,13 @@ public class DefaultFileMover implements FileMover {
 
     @Override
     public void moveToFailed(Path file, String errorMessage) {
-        if(!Files.isDirectory(file)){
-            throw new IllegalArgumentException(file.toString() + " is not a directory");
+        if(Files.isDirectory(file)){
+            throw new IllegalArgumentException(file.toString() + " is not a file");
         }
         try {
-            Files.move(file, Path.of(properties.getFailedDir()), StandardCopyOption.REPLACE_EXISTING);
-            Path errorFile = file.resolveSibling(file.getFileName() + ERROR_FILE_SUFFIX);
+            Path target = Path.of(properties.getFailedDir()).resolve(file.getFileName());
+            Files.move(file, target, StandardCopyOption.REPLACE_EXISTING);
+            Path errorFile = target.resolveSibling(file.getFileName() + ERROR_FILE_SUFFIX);
             Files.writeString(errorFile, errorMessage);
         } catch (IOException e) {
             log.info("{} failed to be moved", file);
