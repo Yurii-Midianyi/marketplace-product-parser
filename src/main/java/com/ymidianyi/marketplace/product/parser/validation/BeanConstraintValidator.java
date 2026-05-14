@@ -2,12 +2,15 @@ package com.ymidianyi.marketplace.product.parser.validation;
 
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
 
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.Set;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 
+@Component
 public class BeanConstraintValidator implements ProductExportValidator {
 
     private final Validator validator;

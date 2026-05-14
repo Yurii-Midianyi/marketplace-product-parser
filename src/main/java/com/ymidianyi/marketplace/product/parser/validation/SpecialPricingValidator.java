@@ -2,10 +2,15 @@ package com.ymidianyi.marketplace.product.parser.validation;
 
 import com.ymidianyi.marketplace.product.parser.dto.ProductDto;
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
+
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 public class SpecialPricingValidator implements ProductExportValidator{
+
     @Override
     public ValidationResult validate(ProductExportFileDto dto) {
         if (dto == null || dto.products() == null) {

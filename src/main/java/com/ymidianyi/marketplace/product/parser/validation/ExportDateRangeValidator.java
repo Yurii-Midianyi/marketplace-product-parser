@@ -2,10 +2,14 @@ package com.ymidianyi.marketplace.product.parser.validation;
 
 import com.ymidianyi.marketplace.product.parser.config.FileProcessingProperties;
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
+
+import org.springframework.stereotype.Component;
+
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 
+@Component
 public class ExportDateRangeValidator implements ProductExportValidator{
 
     private final int maxExportAge;
