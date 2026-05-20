@@ -21,5 +21,20 @@ public class TestUtilities {
                 null
         );
     }
+
+    public static ProductDto createNotValidProduct() {
+        return new ProductDto(
+                null,
+                "5645",
+                BigDecimal.valueOf(-500),
+                null,
+                null,
+                null,
+                ProductState.ACTIVE,
+                null,
+                null,
+                null
+        );
+    }
 }
 
