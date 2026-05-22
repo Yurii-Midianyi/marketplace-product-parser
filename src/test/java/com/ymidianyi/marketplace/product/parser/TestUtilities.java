@@ -22,12 +22,17 @@ public class TestUtilities {
         );
     }
 
+    /*
+    empty name,
+    negative price,
+    special price is present but special dates are missing
+    */
     public static ProductDto createNotValidProduct() {
         return new ProductDto(
                 null,
                 "5645",
                 BigDecimal.valueOf(-500),
-                null,
+                BigDecimal.valueOf(1000),
                 null,
                 null,
                 ProductState.ACTIVE,

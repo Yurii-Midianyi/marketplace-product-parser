@@ -4,12 +4,8 @@ import com.ymidianyi.marketplace.product.parser.TestUtilities;
 import com.ymidianyi.marketplace.product.parser.config.FileProcessingProperties;
 import com.ymidianyi.marketplace.product.parser.dto.ProductDto;
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
-import com.ymidianyi.marketplace.product.parser.scanner.DefaultFileMover;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;

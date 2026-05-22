@@ -24,7 +24,7 @@ public class SpecialPricingValidator implements ProductExportValidator{
     }
 
     private List<String> validateProduct(int index, ProductDto productDto) {
-        if (productDto == null || productDto.specialPrice() == null) {
+        if (productDto == null || productDto.specialPrice() == null || productDto.price() == null ) {
             return List.of();
         }
         String productString = "products[" + index + "]";
@@ -40,7 +40,7 @@ public class SpecialPricingValidator implements ProductExportValidator{
         if (datesPresent && !productDto.specialFrom().isBefore(productDto.specialTo())) {
             errors.add(productString + ".specialFrom: must be before specialTo");
         }
-        if (productDto.price() != null && productDto.specialPrice().compareTo(productDto.price()) >= 0) {
+        if (productDto.specialPrice().compareTo(productDto.price()) >= 0) {
             errors.add(productString + ".specialPrice: must be less than price");
         }
         return errors;
