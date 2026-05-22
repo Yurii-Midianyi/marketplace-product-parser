@@ -2,11 +2,14 @@ package com.ymidianyi.marketplace.product.parser.validation;
 
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
 
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Component
 public class CompositeProductExportValidator implements ProductExportValidator {
     private final List<ProductExportValidator> rules;
 
