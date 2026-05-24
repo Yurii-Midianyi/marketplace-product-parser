@@ -64,7 +64,7 @@ public class ProductImportService {
     }
 
     /**
-     * Copies fields from the DTO to the entity and re-links categories.
+     * Copies fields from the DTO to the entity and replace categories.
      * Clears old category associations
      */
     private void applyProductFields(Product product, ProductDto dto, ImportContext context) {
@@ -81,10 +81,7 @@ public class ProductImportService {
         product.setSourceFileName(context.sourceFileName());
         product.setImportedAt(Instant.now(clock));
 
-        Set<Category> oldCategories = Set.copyOf(product.getCategories());
-        oldCategories.forEach(product::removeCategory);
-
-        resolveCategories(dto.categories()).forEach(product::addCategory);
+        product.replaceCategories(resolveCategories(dto.categories()));
     }
 
     /**

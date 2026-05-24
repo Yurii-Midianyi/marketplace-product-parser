@@ -87,4 +87,16 @@ public class Product {
         categories.remove(category);
         category.getProducts().remove(this);
     }
+
+    /**
+     * Replaces all current category associations with the new set af categories.
+     * A defensive snapshot of the current categories is created before removal
+     * to avoid ConcurrentModificationException — iterating and removing
+     * from the same live collection at the same time would throw.
+     */
+    public void replaceCategories(Set<Category> newCategories) {
+        Set<Category> currentCategoriesSnapshot = Set.copyOf(categories);
+        currentCategoriesSnapshot.forEach(this::removeCategory);
+        newCategories.forEach(this::addCategory);
+    }
 }
