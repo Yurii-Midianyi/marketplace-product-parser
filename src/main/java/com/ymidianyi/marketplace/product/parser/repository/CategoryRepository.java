@@ -1,6 +1,6 @@
 package com.ymidianyi.marketplace.product.parser.repository;
 
-import com.ymidianyi.marketplace.product.parser.model.Product;
+import com.ymidianyi.marketplace.product.parser.model.Category;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, Long> {
-    Optional<Product> findBySkuAndPartnerId(String sku, String partnerId);
+public interface CategoryRepository extends JpaRepository<Category, Integer> {
+    Optional<Category> findByName(String name);
 }
