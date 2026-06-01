@@ -12,8 +12,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import jakarta.transaction.Transactional;
 
 @Service
+@Transactional
 public class ProductImportService {
 
     private final Clock clock;
@@ -55,7 +57,7 @@ public class ProductImportService {
             product.setPartnerId(partnerId);
             product.setSourceFileName(sourceFileName);
             product.setImportedAt(clock.instant());
-            product.setCategories(resolveCategories(dto.categories()));
+            product.replaceCategories(resolveCategories(dto.categories()));
     }
 
     private Set<Category> resolveCategories(List<String> names){

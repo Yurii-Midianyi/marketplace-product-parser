@@ -1,5 +1,6 @@
 package com.ymidianyi.marketplace.product.parser.model;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.Entity;
@@ -29,7 +30,7 @@ public class Category {
     private String name;
 
     @ManyToMany(mappedBy = "categories")
-    private Set<Product> products;
+    private Set<Product> products = new HashSet<>();
 
     public Category(String name) {
         this.name = name;

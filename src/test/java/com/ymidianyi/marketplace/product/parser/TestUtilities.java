@@ -4,6 +4,8 @@ import com.ymidianyi.marketplace.product.parser.dto.ProductDto;
 import com.ymidianyi.marketplace.product.parser.model.ProductState;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 
 public class TestUtilities {
 
@@ -39,6 +41,21 @@ public class TestUtilities {
                 null,
                 null,
                 null
+        );
+    }
+
+    public static ProductDto createFullyPopulatedProduct() {
+        return new ProductDto(
+                "Milk",
+                "5890",
+                BigDecimal.valueOf(534),
+                BigDecimal.valueOf(400),
+                LocalDate.of(2026, 6, 1),
+                LocalDate.of(2026, 6, 8),
+                ProductState.ACTIVE,
+                "MilkyWay",
+                List.of("Diary"),
+                "https://nutritionsource.hsph.harvard.edu/milk/"
         );
     }
 }
