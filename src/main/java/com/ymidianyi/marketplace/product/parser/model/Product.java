@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -51,7 +52,7 @@ public class Product {
     private ProductState state;
     private String brand;
 
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "product_category",
             joinColumns = @JoinColumn(name = "id"),
@@ -71,5 +72,11 @@ public class Product {
     public void removeCategory(Category category) {
         categories.remove(category);
         category.getProducts().remove(this);
+    }
+
+    public void replaceCategories(Set<Category> newCategories) {
+        Set<Category> currentCategoriesSnapshot = Set.copyOf(categories);
+        currentCategoriesSnapshot.forEach(this::removeCategory);
+        newCategories.forEach(this::addCategory);
     }
 }
