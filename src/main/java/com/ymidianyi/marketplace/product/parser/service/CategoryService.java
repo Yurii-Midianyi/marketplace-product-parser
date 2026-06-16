@@ -45,7 +45,6 @@ public class CategoryService {
 
     /**
      * Inserts the category if it does not exist yet, in a dedicated transaction.
-     * Package-private — callers should use getOrCreate() which handles the full lifecycle.
      *
      * REQUIRES_NEW ensures this transaction is independent: a DataIntegrityViolationException
      * from a concurrent duplicate insert rolls back only this transaction, not the caller's.
