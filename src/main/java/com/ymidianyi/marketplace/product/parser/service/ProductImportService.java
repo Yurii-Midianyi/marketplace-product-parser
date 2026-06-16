@@ -4,7 +4,6 @@ import com.ymidianyi.marketplace.product.parser.dto.ProductDto;
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
 import com.ymidianyi.marketplace.product.parser.model.Category;
 import com.ymidianyi.marketplace.product.parser.model.Product;
-import com.ymidianyi.marketplace.product.parser.repository.CategoryRepository;
 import com.ymidianyi.marketplace.product.parser.repository.ProductRepository;
 
 import org.springframework.stereotype.Service;
@@ -21,18 +20,18 @@ import java.util.stream.Collectors;
 public class ProductImportService {
 
     private final ProductRepository productRepository;
-    private final CategoryRepository categoryRepository;
+    private final CategoryService categoryService;
     private final Clock clock;
 
     public ProductImportService(ProductRepository productRepository,
-                                CategoryRepository categoryRepository,
+                                CategoryService categoryService,
                                 Clock clock) {
         this.productRepository = productRepository;
-        this.categoryRepository = categoryRepository;
+        this.categoryService = categoryService;
         this.clock = clock;
     }
 
-    /** Holds file fields to pass through the logic */
+    /** Holds file-level fields to pass through the import pipeline. */
     private record ImportContext(String partnerId, String sourceFileName) {}
 
     public void importProducts(ProductExportFileDto dto, String sourceFileName) {
@@ -56,7 +55,7 @@ public class ProductImportService {
 
     /**
      * Returns an existing Product for the given SKU + partner,
-     * or a new instance if none exists yet - upsert logic.
+     * or a new instance if none exists yet — upsert logic.
      */
     private Product findOrCreateProduct(String sku, String partnerId) {
         return productRepository.findBySkuAndPartnerId(sku, partnerId)
@@ -64,8 +63,7 @@ public class ProductImportService {
     }
 
     /**
-     * Copies fields from the DTO to the entity and replace categories.
-     * Clears old category associations
+     * Copies fields from the DTO to the entity and replaces category associations.
      */
     private void applyProductFields(Product product, ProductDto dto, ImportContext context) {
         product.setName(dto.name());
@@ -85,9 +83,9 @@ public class ProductImportService {
     }
 
     /**
-     * Looks up each category name in the database; creates and persists a new
-     * Category if it does not exist yet. Blank, null, and duplicate names are skipped.
-     * Cascade on the owning side (products) handles saving created instances.
+     * Resolves each category name to a managed Category entity.
+     * Logic moves to CategoryService which owns the find-or-create logic,
+     * including concurrent-insert safety and session management.
      */
     private Set<Category> resolveCategories(List<String> names) {
         if (names == null || names.isEmpty()) {
@@ -96,10 +94,7 @@ public class ProductImportService {
         return names.stream()
                 .filter(name -> name != null && !name.isBlank())
                 .distinct()
-                .map(name -> categoryRepository.findByName(name)
-                        .orElseGet(() -> new Category(name)))
+                .map(categoryService::getOrCreate)
                 .collect(Collectors.toSet());
     }
 }
-
-

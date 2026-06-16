@@ -21,8 +21,8 @@ file-processing:
   input-dir: "data/input-folder"
   processed-dir: "data/processed-folder"
   failed-dir: "data/failed-folder"
-  cron: "* */5 * * * *"
+  cron: "*/50 * * * * *"
   thread-pool-size: 10
   max-export-age-days: 30
-  file-processing-timeout-minutes: 10
+  file-processing-timeout-minutes: 5
 
