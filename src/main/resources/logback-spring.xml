@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!--
+        %X{file} prints the MDC value set by SingleFileProcessor for the duration of
+        each file's processing. When MDC is not set (e.g. startup logs), the field is
+        empty so the rest of the pattern still writes cleanly.
+    -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %5level [%15.15t] [%-25.25X{file}] %-40.40logger{40} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <springProfile name="!test">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="test">
+        <root level="WARN">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+</configuration>

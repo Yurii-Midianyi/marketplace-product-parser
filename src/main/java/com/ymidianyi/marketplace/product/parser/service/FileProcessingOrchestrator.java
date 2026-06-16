@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -42,20 +43,31 @@ public class FileProcessingOrchestrator {
         }
         log.info("Found {} file(s) to process.", files.size());
 
-        // submit every file to the thread pool at once.
+        int timeoutMinutes = properties.getFileProcessingTimeoutMinutes();
+
+        // Submit every file to the thread pool at once.
         // supplyAsync schedules fileProcessor.process(file) on a worker thread and
         // immediately returns a CompletableFuture — a handle to the result that will
         // arrive later. All files start in parallel; this line does not wait for any of them.
+        //
+        // orTimeout marks this future as failed with TimeoutException if the task is still
+        // running after the deadline. The worker thread itself is not interrupted, it keeps
+        // running until it finishes, but we stop waiting for it and treat the file as failed.
         List<CompletableFuture<ProcessingResult>> futures = files.stream()
-                .map(file -> CompletableFuture.supplyAsync(() -> fileProcessor.process(file), executorService))
+                .map(file -> CompletableFuture
+                        .supplyAsync(() -> fileProcessor.process(file), executorService)
+                        .orTimeout(timeoutMinutes, TimeUnit.MINUTES)
+                        .exceptionally(ex -> {
+                            log.error("File '{}' timed out after {} minutes", file.getFileName(), timeoutMinutes);
+                            return ProcessingResult.parseError(
+                                    file.getFileName().toString(),
+                                    "Processing timed out after " + timeoutMinutes + " minutes");
+                        }))
                 .toList();
 
-        // block the current thread until every future has completed.
-        // allOf() creates a single combined future that is done only when all
-        // individual futures are done. join() then waits for that combined future.
-        // Because SingleFileProcessor.process() never throws, every future completes
-        // normally — so join() will not throw a CompletionException here.
-        CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join(); // try to remove and see the result
+        // block until every future has completed (normally or via timeout above).
+        // allOf() creates a combined future that finishes only when all individual ones finish.
+        CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
 
         // All futures are guaranteed complete at this point, so join() on each one
         // returns immediately without blocking.

@@ -9,6 +9,7 @@ import com.ymidianyi.marketplace.product.parser.validation.ProductExportValidato
 import com.ymidianyi.marketplace.product.parser.validation.ValidationResult;
 
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -39,12 +40,15 @@ public class SingleFileProcessor {
      */
     public ProcessingResult process(Path file) {
         String fileName = file.getFileName().toString();
+        MDC.put("file", fileName);
         try {
             return doProcess(file, fileName);
         } catch (Exception e) {
             log.error("Unexpected error processing file '{}'", fileName, e);
             silentlyMoveToFailed(file, fileName, e.toString());
             return ProcessingResult.parseError(fileName, e.toString());
+        } finally {
+            MDC.remove("file");
         }
     }
 

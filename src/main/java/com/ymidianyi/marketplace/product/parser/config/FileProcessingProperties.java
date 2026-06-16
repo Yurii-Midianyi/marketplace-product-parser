@@ -32,6 +32,8 @@ public class FileProcessingProperties {
     private int threadPoolSize;
     @Min(1)
     private int maxExportAgeDays;
+    @Min(1)
+    private int fileProcessingTimeoutMinutes;
 
     @PostConstruct
     public void init() {
