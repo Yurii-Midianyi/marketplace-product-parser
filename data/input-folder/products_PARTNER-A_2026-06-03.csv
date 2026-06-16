@@ -1,0 +1,3 @@
+Name,SKU,Price,Special Price,Special From,Special To,State,Brand,Category,Image URL
+Apple Fruit,SKU-001,41238.0,35000.0,2026-06-01,2026-07-01,ACTIVE,FreshFarm,Fruits,https://img.example.com/apple.jpg
+Banana Bunch,SKU-002,12500.0,,,,ACTIVE,FreshFarm,Fruits,https://img.example.com/banana.jpg

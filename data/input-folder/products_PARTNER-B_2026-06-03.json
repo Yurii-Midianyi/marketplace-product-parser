@@ -1,0 +1,26 @@
+{
+  "partnerId": "PARTNER-B",
+  "exportDate": "2026-06-03T10:00:00Z",
+  "products": [
+    {
+      "name": "Laptop Pro 15",
+      "sku": "SKU-101",
+      "price": 125000.0,
+      "specialPrice": 99000.0,
+      "specialFrom": "2026-06-01",
+      "specialTo": "2026-06-30",
+      "state": "ACTIVE",
+      "brand": "TechBrand",
+      "categories": ["Electronics", "Laptops"],
+      "imageUrl": "https://img.example.com/laptop.jpg"
+    },
+    {
+      "name": "Wireless Mouse",
+      "sku": "SKU-102",
+      "price": 3500.0,
+      "state": "ACTIVE",
+      "brand": "TechBrand",
+      "categories": ["Electronics", "Accessories"]
+    }
+  ]
+}
