@@ -25,7 +25,8 @@ class CategoryServiceRetryTest {
     @BeforeEach
     void setUp() {
         categoryRepository = mock(CategoryRepository.class);
-        // Spy lets us stub the package-private findOrCreate while keeping getOrCreate real.
+        // spy lets us fake the one method that needs a database (findOrCreate)
+        // and keeping the method we actually want to test (getOrCreate) real.
         categoryService = spy(new CategoryService(categoryRepository));
     }
 
