@@ -55,7 +55,7 @@ public class FileProcessingOrchestrator {
                 .toList();
 
         //wait for all threads to complete. Convert to array because .allOf method works only with arrays
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[]::new)).join();
+        CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
 
         // All futures are guaranteed complete at this point, so join() on each one
         // returns immediately without blocking.
