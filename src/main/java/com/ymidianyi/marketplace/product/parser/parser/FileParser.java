@@ -11,4 +11,8 @@ public interface FileParser {
 
     boolean supports(String fileExtension);
 
+    static String extensionOf(String fileName) {
+        int dot = fileName.lastIndexOf('.');
+        return dot >= 0 ? fileName.substring(dot + 1).toLowerCase() : "";
+    }
 }
