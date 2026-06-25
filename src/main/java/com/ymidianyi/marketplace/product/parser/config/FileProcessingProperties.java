@@ -29,6 +29,9 @@ public class FileProcessingProperties {
     @Min(1)
     private int maxExportAgeDays;
 
+    @Min(1)
+    private int fileProcessingTimeoutMinutes;
+
     @PostConstruct
     public void init(){
         try {
@@ -43,7 +46,7 @@ public class FileProcessingProperties {
             log.error("Initial folders were not created during startup");
             throw new RuntimeException("Initial folders were not created during startup");
         }
-        log.info("inputDir - {}, processedDir - {}, failedDir - {}, cron - {}, threadPoolSize- {}, maxExportAgeDays - {}",
-                inputDir, processedDir, failedDir, cron, threadPoolSize, maxExportAgeDays);
+        log.info("inputDir - {}, processedDir - {}, failedDir - {}, cron - {}, threadPoolSize- {}, maxExportAgeDays - {}, fileProcessingTimeoutMinutes - {}",
+                inputDir, processedDir, failedDir, cron, threadPoolSize, maxExportAgeDays, fileProcessingTimeoutMinutes);
     }
 }
