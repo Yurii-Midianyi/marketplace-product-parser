@@ -18,7 +18,7 @@ public class SingleFileProcessor {
     private final FileParserFactory fileParserFactory;
     private final ProductExportValidator validator;
     private final ProductImportService productImportService;
-    private final FileMover  fileMover;
+    private final FileMover fileMover;
 
     public SingleFileProcessor(FileParserFactory fileParserFactory,
                                ProductExportValidator validator,
@@ -33,8 +33,9 @@ public class SingleFileProcessor {
     public ProcessingResult process(Path file) {
         try {
             return doProcess(file);
-        } catch (IOException e) {
-            fileMover.moveToFailed(file, e.toString());
+        } catch (Exception e) {
+            log.error("Unexpected error processing file '{}'", file.getFileName(), e);
+            silentlyMoveToFailed(file, file.getFileName().toString(), e.toString());
             return ProcessingResult.parseError(file.getFileName().toString(), e.toString());
         }
     }
@@ -42,6 +43,7 @@ public class SingleFileProcessor {
     private ProcessingResult doProcess(Path file) throws IOException {
         String fileName = file.getFileName().toString();
         FileParser fileParser = fileParserFactory.getParser(FileParser.extensionOf(fileName));
+        log.debug("Parsing '{}' with {}", fileName, fileParser.getClass().getSimpleName());
         ProductExportFileDto exportDto = fileParser.parse(file);
         ValidationResult validationResult = validator.validate(exportDto);
         if(!validationResult.valid()){
@@ -53,5 +55,13 @@ public class SingleFileProcessor {
         fileMover.moveToProcessed(file);
         log.info("File {} was successfully processed", fileName);
         return ProcessingResult.success(fileName);
+    }
+
+    private void silentlyMoveToFailed(Path file, String fileName, String detail) {
+        try {
+            fileMover.moveToFailed(file, detail);
+        } catch (IOException ex) {
+            log.error("Could not move '{}' to failed directory", fileName, ex);
+        }
     }
 }

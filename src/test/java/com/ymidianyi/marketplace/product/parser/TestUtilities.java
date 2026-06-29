@@ -1,9 +1,11 @@
 package com.ymidianyi.marketplace.product.parser;
 
 import com.ymidianyi.marketplace.product.parser.dto.ProductDto;
+import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
 import com.ymidianyi.marketplace.product.parser.model.ProductState;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -57,6 +59,13 @@ public class TestUtilities {
                 List.of("Diary"),
                 "https://nutritionsource.hsph.harvard.edu/milk/"
         );
+    }
+
+    public static ProductExportFileDto createValidProductExportFileDto() {
+        ProductDto product = new ProductDto(
+                "Apple Fruit", "SKU-001", BigDecimal.valueOf(100), null,
+                null, null, ProductState.ACTIVE, null, List.of(), null);
+        return new ProductExportFileDto("PARTNER-A", Instant.parse("2026-05-22T20:07:51Z"), List.of(product));
     }
 }
 

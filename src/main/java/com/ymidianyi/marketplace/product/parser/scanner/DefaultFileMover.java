@@ -22,32 +22,25 @@ public class DefaultFileMover implements FileMover {
     }
 
     @Override
-    public void moveToProcessed(Path file) {
-        if(Files.isDirectory(file)){
-            throw new IllegalArgumentException(file.getFileName() + " is not a file");
-        }
-        try {
-            Path target = Path.of(properties.getProcessedDir()).resolve(file.getFileName());
-            Files.move(file, target, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            log.info("Processed file {} failed to be moved", file.getFileName());
-            throw new RuntimeException(e);
-        }
+    public Path moveToProcessed(Path file) throws IOException{
+        Path target = ensureDirectory(Path.of(properties.getProcessedDir())).resolve(file.getFileName());
+        Files.move(file, target, StandardCopyOption.REPLACE_EXISTING);
+        log.info("Moved file {} to {}", file.getFileName(), target);
+        return target;
     }
 
     @Override
-    public void moveToFailed(Path file, String errorMessage) {
-        if(Files.isDirectory(file)){
-            throw new IllegalArgumentException(file.toString() + " is not a file");
-        }
-        try {
-            Path target = Path.of(properties.getFailedDir()).resolve(file.getFileName());
-            Files.move(file, target, StandardCopyOption.REPLACE_EXISTING);
-            Path errorFile = target.resolveSibling(file.getFileName() + ERROR_FILE_SUFFIX);
-            Files.writeString(errorFile, errorMessage);
-        } catch (IOException e) {
-            log.info("Failed file {} failed to be moved", file.getFileName());
-            throw new RuntimeException(e);
-        }
+    public Path moveToFailed(Path file, String errorMessage) throws IOException{
+        Path target = ensureDirectory(Path.of(properties.getFailedDir())).resolve(file.getFileName());
+        Files.move(file, target, StandardCopyOption.REPLACE_EXISTING);
+        Path errorFile = target.resolveSibling(file.getFileName() + ERROR_FILE_SUFFIX);
+        Files.writeString(errorFile, errorMessage);
+        log.info("Moved file {} to failed directory {}", file.getFileName(), target);
+        return target;
+    }
+
+    private Path ensureDirectory(Path dir) throws IOException {
+        Files.createDirectories(dir);
+        return dir;
     }
 }
