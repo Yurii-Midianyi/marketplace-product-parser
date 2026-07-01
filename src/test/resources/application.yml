@@ -24,3 +24,4 @@ file-processing:
   cron: "0 0 0 31 12 ?"
   thread-pool-size: 2
   max-export-age-days: 30
+  file-processing-timeout-minutes: 5

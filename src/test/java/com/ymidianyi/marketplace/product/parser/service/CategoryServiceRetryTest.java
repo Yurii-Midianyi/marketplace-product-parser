@@ -15,32 +15,32 @@ import static org.mockito.Mockito.*;
 /**
  * Unit test for the concurrent-insert retry path in CategoryService.getOrCreate.
  * Uses mocks so no Spring context or DB is needed — the race scenario is simulated
- * by making findOrCreate throw DataIntegrityViolationException on the first call.
+ * by making CategoryInsertService.findOrCreate throw DataIntegrityViolationException.
  */
 class CategoryServiceRetryTest {
 
     private CategoryRepository categoryRepository;
+    private CategoryInsertService categoryInsertService;
     private CategoryService categoryService;
 
     @BeforeEach
     void setUp() {
         categoryRepository = mock(CategoryRepository.class);
-        // spy lets us fake the one method that needs a database (findOrCreate)
-        // and keeping the method we actually want to test (getOrCreate) real.
-        categoryService = spy(new CategoryService(categoryRepository));
+        categoryInsertService = mock(CategoryInsertService.class);
+        categoryService = new CategoryService(categoryRepository, categoryInsertService);
     }
 
     @Test
     void getOrCreate_whenFindOrCreateThrowsDuplicate_fallsBackToFindByName() {
         Category existing = new Category("Fruits");
         doThrow(new DataIntegrityViolationException("duplicate key"))
-                .when(categoryService).findOrCreate("Fruits");
+                .when(categoryInsertService).findOrCreate("Fruits");
         when(categoryRepository.findByName("Fruits")).thenReturn(Optional.of(existing));
 
         Category result = categoryService.getOrCreate("Fruits");
 
         assertThat(result).isSameAs(existing);
-        verify(categoryService).findOrCreate("Fruits");
+        verify(categoryInsertService).findOrCreate("Fruits");
         verify(categoryRepository).findByName("Fruits");
     }
 
@@ -52,9 +52,7 @@ class CategoryServiceRetryTest {
         Category result = categoryService.getOrCreate("Fruits");
 
         assertThat(result).isSameAs(managed);
-        verify(categoryService).findOrCreate("Fruits");
-        // findByName is called twice: once inside findOrCreate (existence check)
-        // and once in getOrCreate (to return a managed entity in the caller's transaction).
-        verify(categoryRepository, times(2)).findByName("Fruits");
+        verify(categoryInsertService).findOrCreate("Fruits");
+        verify(categoryRepository).findByName("Fruits");
     }
 }

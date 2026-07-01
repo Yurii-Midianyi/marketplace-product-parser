@@ -28,8 +28,8 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@Import({ProductImportService.class, CategoryService.class})
-// CategoryService.findOrCreate uses REQUIRES_NEW — those transactions commit independently
+@Import({ProductImportService.class, CategoryService.class, CategoryInsertService.class})
+// CategoryInsertService.findOrCreate uses REQUIRES_NEW — those transactions commit independently
 // and are NOT rolled back by @DataJpaTest's default rollback mechanism.
 // NOT_SUPPORTED disables the outer test transaction; @AfterEach handles cleanup explicitly.
 @Transactional(propagation = Propagation.NOT_SUPPORTED)

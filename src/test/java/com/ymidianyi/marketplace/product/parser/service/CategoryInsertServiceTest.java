@@ -13,16 +13,16 @@ import org.springframework.transaction.annotation.Transactional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@Import(CategoryService.class)
-// CategoryService.findOrCreate uses REQUIRES_NEW which commits independently of any
+@Import(CategoryInsertService.class)
+// CategoryInsertService.findOrCreate uses REQUIRES_NEW which commits independently of any
 // outer transaction. @DataJpaTest wraps each test in a rollback transaction by default,
 // but that rollback does NOT undo REQUIRES_NEW commits — so data is dirty between tests.
 // NOT_SUPPORTED disables the outer test transaction; @AfterEach handles cleanup instead.
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
-class CategoryServiceTest {
+class CategoryInsertServiceTest {
 
     @Autowired
-    CategoryService categoryService;
+    CategoryInsertService categoryInsertService;
 
     @Autowired
     CategoryRepository categoryRepository;
@@ -34,7 +34,7 @@ class CategoryServiceTest {
 
     @Test
     void findOrCreate_newCategory_persistsAndReturnsIt() {
-        var result = categoryService.findOrCreate("Fruits");
+        var result = categoryInsertService.findOrCreate("Fruits");
 
         assertThat(result.getId()).isNotNull();
         assertThat(result.getName()).isEqualTo("Fruits");
@@ -43,9 +43,9 @@ class CategoryServiceTest {
 
     @Test
     void findOrCreate_existingCategory_returnsExistingWithoutDuplicate() {
-        categoryService.findOrCreate("Fruits");
+        categoryInsertService.findOrCreate("Fruits");
 
-        var result = categoryService.findOrCreate("Fruits");
+        var result = categoryInsertService.findOrCreate("Fruits");
 
         assertThat(result.getName()).isEqualTo("Fruits");
         assertThat(categoryRepository.count()).isEqualTo(1);
@@ -53,8 +53,8 @@ class CategoryServiceTest {
 
     @Test
     void findOrCreate_twoDifferentNames_createsBoth() {
-        categoryService.findOrCreate("Fruits");
-        categoryService.findOrCreate("Vegetables");
+        categoryInsertService.findOrCreate("Fruits");
+        categoryInsertService.findOrCreate("Vegetables");
 
         assertThat(categoryRepository.count()).isEqualTo(2);
     }
