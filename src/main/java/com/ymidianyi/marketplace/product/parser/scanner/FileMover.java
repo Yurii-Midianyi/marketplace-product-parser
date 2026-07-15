@@ -1,9 +1,10 @@
 package com.ymidianyi.marketplace.product.parser.scanner;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 public interface FileMover {
-    void moveToProcessed(Path file);
-    void moveToFailed(Path file, String errorMessage);
+    Path moveToProcessed(Path file) throws IOException;
+    Path moveToFailed(Path file, String errorMessage) throws IOException;
 
 }
