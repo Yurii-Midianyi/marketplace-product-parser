@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @DataJpaTest
-@Import(CategoryService.class)
+@Import({CategoryService.class, CategoryInsertService.class})
 // CategoryService.findOrCreate uses REQUIRES_NEW which commits independently of any
 // outer transaction. @DataJpaTest wraps each test in a rollback transaction by default,
 // but that rollback does NOT undo REQUIRES_NEW commits — so data is dirty between tests.

@@ -13,22 +13,20 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class CategoryService {
     private final CategoryRepository categoryRepository;
+    private final CategoryInsertService categoryInsertService;
 
-    public CategoryService(CategoryRepository categoryRepository) {
+    public CategoryService(CategoryRepository categoryRepository, CategoryInsertService categoryInsertService) {
         this.categoryRepository = categoryRepository;
+        this.categoryInsertService = categoryInsertService;
     }
 
     public Category getOrCreate(String name){
         try{
-            findOrCreate(name);
+            categoryInsertService.findOrCreate(name);
         } catch (DataIntegrityViolationException ex){
             log.debug("Category '{}' was inserted concurrently, fetching existing row", name);
         }
         return categoryRepository.findByName(name).orElseThrow(()->new IllegalStateException("Category '"+name+"' was not found"));
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    Category findOrCreate(String name){
-        return categoryRepository.findByName(name).orElseGet(()->categoryRepository.saveAndFlush(new Category(name)));
-    }
 }
