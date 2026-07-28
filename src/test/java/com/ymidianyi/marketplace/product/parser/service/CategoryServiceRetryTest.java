@@ -20,22 +20,24 @@ import static org.mockito.Mockito.when;
 public class CategoryServiceRetryTest {
     CategoryService categoryService;
     CategoryRepository categoryRepository;
+    CategoryInsertService categoryInsertService;
 
     @BeforeEach
     void setUp(){
         categoryRepository = mock(CategoryRepository.class);
-        categoryService = spy(new CategoryService(categoryRepository));
+        categoryInsertService = spy(new CategoryInsertService(categoryRepository));
+        categoryService = spy(new CategoryService(categoryRepository, categoryInsertService));
     }
 
     @Test
     void testDuplicateCategoryFound(){
         Category existing = new Category("Fruits");
-        doThrow(new DataIntegrityViolationException("duplicate found")).when(categoryService).findOrCreate("Fruits");
+        doThrow(new DataIntegrityViolationException("duplicate found")).when(categoryInsertService).findOrCreate("Fruits");
         when(categoryRepository.findByName("Fruits")).thenReturn(Optional.of(existing));
 
         Category result = categoryService.getOrCreate("Fruits");
         assertThat(result).isSameAs(existing);
-        verify(categoryService).findOrCreate("Fruits");
+        verify(categoryInsertService).findOrCreate("Fruits");
         verify(categoryRepository).findByName("Fruits");
     }
 
@@ -46,7 +48,7 @@ public class CategoryServiceRetryTest {
 
         Category result = categoryService.getOrCreate("Fruits");
         assertThat(result).isSameAs(existing);
-        verify(categoryService).findOrCreate("Fruits");
+        verify(categoryInsertService).findOrCreate("Fruits");
         verify(categoryRepository, times(2)).findByName("Fruits");
     }
 }
