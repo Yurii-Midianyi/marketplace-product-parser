@@ -16,6 +16,12 @@ spring:
   h2:
     console:
       enabled: false
+  kafka:
+    bootstrap-servers: localhost:19092
+
+app:
+  kafka:
+    product-upserted-topic: product.upserted
 
 file-processing:
   input-dir: "target/test-data/input"
