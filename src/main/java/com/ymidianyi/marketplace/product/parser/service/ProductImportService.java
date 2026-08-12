@@ -2,6 +2,8 @@ package com.ymidianyi.marketplace.product.parser.service;
 
 import com.ymidianyi.marketplace.product.parser.dto.ProductDto;
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
+import com.ymidianyi.marketplace.product.parser.event.ProductUpsertedEvent;
+import com.ymidianyi.marketplace.product.parser.messaging.ProductEventPublisher;
 import com.ymidianyi.marketplace.product.parser.model.Category;
 import com.ymidianyi.marketplace.product.parser.model.Product;
 import com.ymidianyi.marketplace.product.parser.repository.ProductRepository;
@@ -21,13 +23,16 @@ public class ProductImportService {
 
     private final ProductRepository productRepository;
     private final CategoryService categoryService;
+    private final ProductEventPublisher productEventPublisher;
     private final Clock clock;
 
     public ProductImportService(ProductRepository productRepository,
                                 CategoryService categoryService,
+                                ProductEventPublisher productEventPublisher,
                                 Clock clock) {
         this.productRepository = productRepository;
         this.categoryService = categoryService;
+        this.productEventPublisher = productEventPublisher;
         this.clock = clock;
     }
 
@@ -50,7 +55,8 @@ public class ProductImportService {
     private void importSingleProduct(ProductDto dto, ImportContext context) {
         Product product = findOrCreateProduct(dto.sku(), context.partnerId());
         applyProductFields(product, dto, context);
-        productRepository.save(product);
+        Product saved = productRepository.save(product);
+        productEventPublisher.productUpserted(ProductUpsertedEvent.from(saved, Instant.now(clock)));
     }
 
     /**

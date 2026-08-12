@@ -2,6 +2,7 @@ package com.ymidianyi.marketplace.product.parser.service;
 
 import com.ymidianyi.marketplace.product.parser.dto.ProductDto;
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
+import com.ymidianyi.marketplace.product.parser.messaging.ProductEventPublisher;
 import com.ymidianyi.marketplace.product.parser.model.Category;
 import com.ymidianyi.marketplace.product.parser.model.Product;
 import com.ymidianyi.marketplace.product.parser.model.ProductState;
@@ -33,7 +34,7 @@ class ProductImportServiceConcurrentCategoryTest {
         categoryService   = mock(CategoryService.class);
 
         service = new ProductImportService(
-                productRepository, categoryService,
+                productRepository, categoryService, mock(ProductEventPublisher.class),
                 Clock.fixed(Instant.parse("2026-03-23T10:00:00Z"), ZoneOffset.UTC));
 
         when(productRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));

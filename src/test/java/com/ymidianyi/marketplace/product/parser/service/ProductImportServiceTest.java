@@ -2,6 +2,8 @@ package com.ymidianyi.marketplace.product.parser.service;
 
 import com.ymidianyi.marketplace.product.parser.dto.ProductDto;
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
+import com.ymidianyi.marketplace.product.parser.event.ProductUpsertedEvent;
+import com.ymidianyi.marketplace.product.parser.messaging.ProductEventPublisher;
 import com.ymidianyi.marketplace.product.parser.model.Product;
 import com.ymidianyi.marketplace.product.parser.model.ProductState;
 import com.ymidianyi.marketplace.product.parser.repository.CategoryRepository;
@@ -9,11 +11,13 @@ import com.ymidianyi.marketplace.product.parser.repository.ProductRepository;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -26,6 +30,9 @@ import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @DataJpaTest
 @Import({ProductImportService.class, CategoryService.class, CategoryInsertService.class})
@@ -48,6 +55,7 @@ class ProductImportServiceTest {
     @Autowired ProductImportService service;
     @Autowired ProductRepository productRepository;
     @Autowired CategoryRepository categoryRepository;
+    @MockitoBean ProductEventPublisher productEventPublisher;
     // Runs assertion blocks inside a tiny transaction so Hibernate can initialize
     // lazy collections (for example, saved.getCategories()) after importProducts() ends.
     @Autowired TransactionTemplate transactionTemplate;
@@ -127,6 +135,38 @@ class ProductImportServiceTest {
 
         assertThat(categoryRepository.count()).isEqualTo(1);
         assertThat(productRepository.count()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldPublishProductUpsertedEventWithPersistedState() {
+        service.importProducts(exportDto(List.of(fullProduct())), "products_PARTNER-A_2026-03-23.json");
+
+        ArgumentCaptor<ProductUpsertedEvent> captor = ArgumentCaptor.forClass(ProductUpsertedEvent.class);
+        verify(productEventPublisher).productUpserted(captor.capture());
+
+        ProductUpsertedEvent event = captor.getValue();
+        assertThat(event.partnerId()).isEqualTo("PARTNER-A");
+        assertThat(event.sku()).isEqualTo("802999");
+        assertThat(event.price()).isEqualByComparingTo("41238.0");
+        assertThat(event.state()).isEqualTo(ProductState.ACTIVE);
+        assertThat(event.categories()).containsExactly("Golden apple Bundles");
+        assertThat(event.importedAt()).isEqualTo(FIXED_NOW);
+        assertThat(event.sourceFileName()).isEqualTo("products_PARTNER-A_2026-03-23.json");
+        assertThat(event.messageKey()).isEqualTo("PARTNER-A|802999");
+    }
+
+    @Test
+    void shouldPublishOneEventPerImportedProduct() {
+        ProductDto product1 = new ProductDto(
+                "Product One", "SKU-001", new BigDecimal("100.0"),
+                null, null, null, ProductState.ACTIVE, null, List.of("Fruits"), null);
+        ProductDto product2 = new ProductDto(
+                "Product Two", "SKU-002", new BigDecimal("200.0"),
+                null, null, null, ProductState.ACTIVE, null, List.of("Fruits"), null);
+
+        service.importProducts(exportDto(List.of(product1, product2)), "products.json");
+
+        verify(productEventPublisher, times(2)).productUpserted(any(ProductUpsertedEvent.class));
     }
 
     private ProductDto fullProduct() {
