@@ -15,7 +15,6 @@ public class ProductEventPublisher {
     private final ObjectMapper objectMapper;
     private final KafkaProperties kafkaProperties;
 
-
     public ProductEventPublisher(KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper, KafkaProperties kafkaProperties) {
         this.kafkaTemplate = kafkaTemplate;
         this.objectMapper = objectMapper;

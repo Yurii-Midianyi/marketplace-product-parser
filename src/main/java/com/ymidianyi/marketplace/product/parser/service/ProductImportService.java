@@ -2,12 +2,15 @@ package com.ymidianyi.marketplace.product.parser.service;
 
 import com.ymidianyi.marketplace.product.parser.dto.ProductDto;
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
+import com.ymidianyi.marketplace.product.parser.event.ProductUpsertedEvent;
+import com.ymidianyi.marketplace.product.parser.messaging.ProductEventPublisher;
 import com.ymidianyi.marketplace.product.parser.model.Category;
 import com.ymidianyi.marketplace.product.parser.model.Product;
 import com.ymidianyi.marketplace.product.parser.repository.CategoryRepository;
 import com.ymidianyi.marketplace.product.parser.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 import java.time.Clock;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -21,11 +24,13 @@ public class ProductImportService {
     private final Clock clock;
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final ProductEventPublisher productEventPublisher;
 
-    public ProductImportService(Clock clock, ProductRepository productRepository, CategoryRepository categoryRepository) {
+    public ProductImportService(Clock clock, ProductRepository productRepository, CategoryRepository categoryRepository, ProductEventPublisher productEventPublisher) {
         this.clock = clock;
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
+        this.productEventPublisher = productEventPublisher;
     }
 
     public void importProducts(ProductExportFileDto productExportFileDto, String sourceFileName) {
@@ -37,7 +42,8 @@ public class ProductImportService {
     private void importSingleProduct(ProductDto dto, String sourceFileName, String partnerId){
         Product product = findOrCreateProduct(dto.sku(), partnerId);
         mapProductFields(product, dto, sourceFileName, partnerId);
-        productRepository.save(product);
+        Product saved = productRepository.save(product);
+        productEventPublisher.productUpserted(ProductUpsertedEvent.from(saved, Instant.now(clock)));
     }
 
     private Product findOrCreateProduct(String sku, String partnerId) {
