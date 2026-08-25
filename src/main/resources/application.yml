@@ -16,12 +16,25 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+  kafka:
+    # 9092 is by the embedded H2 server, so use 19092.
+    bootstrap-servers: localhost:19092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+      properties:
+        # Keeps an import from stalling for the 60s default when no broker is up.
+        max.block.ms: 3000
+app:
+  kafka:
+    product-upserted-topic: product.upserted
 
 file-processing:
   input-dir: "data/input-folder"
   processed-dir: "data/processed-folder"
   failed-dir: "data/failed-folder"
-  cron: "* */5 * * * *"
+  cron: "*/50 * * * * *"
   thread-pool-size: 10
   max-export-age-days: 30
   file-processing-timeout-minutes: 5
