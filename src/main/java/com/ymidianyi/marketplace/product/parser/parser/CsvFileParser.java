@@ -1,7 +1,8 @@
 package com.ymidianyi.marketplace.product.parser.parser;
 
 import com.ymidianyi.marketplace.product.parser.dto.CsvProductRow;
-import com.ymidianyi.marketplace.product.parser.dto.FileNameMetadata;
+import com.ymidianyi.marketplace.product.parser.dto.IncomingProductExport;
+import com.ymidianyi.marketplace.product.parser.dto.IngestionFormat;
 import com.ymidianyi.marketplace.product.parser.dto.ProductDto;
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
 import com.ymidianyi.marketplace.product.parser.exception.CsvParsingException;
@@ -9,7 +10,6 @@ import com.ymidianyi.marketplace.product.parser.exception.CsvParsingException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import java.nio.file.Path;
 import java.time.ZoneOffset;
 import java.util.List;
 
@@ -22,9 +22,6 @@ import tools.jackson.dataformat.csv.CsvSchema;
 @Slf4j
 @Component
 public class CsvFileParser implements FileParser {
-
-    private static final String SUPPORTED_EXTENSION = "csv";
-
     private static final CsvSchema CSV_SCHEMA = CsvSchema.builder()
             .addColumn("name")
             .addColumn("sku")
@@ -38,49 +35,47 @@ public class CsvFileParser implements FileParser {
             .addColumn("imageUrl")
             .build()
             .withSkipFirstDataRow(true);
-
     private final ObjectMapper csvMapper;
-    private final FileNameParser fileNameParser;
 
-    public CsvFileParser(@Qualifier("csvObjectMapper") ObjectMapper csvMapper,
-                         FileNameParser fileNameParser) {
+    public CsvFileParser(@Qualifier("csvObjectMapper") ObjectMapper csvMapper) {
         this.csvMapper = csvMapper;
-        this.fileNameParser = fileNameParser;
     }
 
     @Override
-    public ProductExportFileDto parse(Path file) {
-        log.debug("Parsing CSV file: {}", file.getFileName());
+    public ProductExportFileDto parse(IncomingProductExport incomingProductExport) {
+        log.debug("Parsing CSV payload from source: {}", sourceRefOf(incomingProductExport));
 
-        FileNameMetadata metadata = fileNameParser.parse(file.getFileName().toString());
-
-        List<ProductDto> products = readProducts(file);
+        List<ProductDto> products = readProducts(incomingProductExport);
 
         return new ProductExportFileDto(
-                metadata.partnerId(),
-                metadata.exportDate().atStartOfDay(ZoneOffset.UTC).toInstant(),
+                incomingProductExport.partnerId(),
+                incomingProductExport.exportDate().atStartOfDay(ZoneOffset.UTC).toInstant(),
                 products
         );
     }
 
     @Override
-    public boolean supports(String fileExtension) {
-        return SUPPORTED_EXTENSION.equalsIgnoreCase(fileExtension);
+    public boolean supports(IngestionFormat format) {
+        return format == IngestionFormat.CSV;
     }
 
-    private List<ProductDto> readProducts(Path file) {
+    private List<ProductDto> readProducts(IncomingProductExport incomingProductExport) {
         try (MappingIterator<CsvProductRow> iterator = csvMapper
                 .readerFor(CsvProductRow.class)
                 .with(CSV_SCHEMA)
-                .readValues(file.toFile())) {
+                .readValues(incomingProductExport.payload())) {
 
             return iterator.readAll().stream()
                     .map(this::toProductDto)
                     .toList();
         } catch (JacksonException e) {
-            log.error("Failed to parse CSV file {}: {}", file.getFileName(), e.getMessage());
-            throw new CsvParsingException("Failed to parse CSV file: " + file.getFileName(), e);
+            log.error("Failed to parse CSV payload {}: {}", sourceRefOf(incomingProductExport), e.getMessage());
+            throw new CsvParsingException("Failed to parse CSV payload: " + sourceRefOf(incomingProductExport), e);
         }
+    }
+
+    private static String sourceRefOf(IncomingProductExport incomingProductExport) {
+        return incomingProductExport.sourceRef() != null ? incomingProductExport.sourceRef() : "<unknown>";
     }
 
     private ProductDto toProductDto(CsvProductRow row) {

@@ -1,5 +1,6 @@
 package com.ymidianyi.marketplace.product.parser.parser;
 
+import com.ymidianyi.marketplace.product.parser.dto.IngestionFormat;
 import com.ymidianyi.marketplace.product.parser.exception.UnsupportedFileFormatException;
 
 import org.springframework.stereotype.Component;
@@ -21,10 +22,10 @@ public class FileParserFactory {
                 .toList());
     }
 
-    public FileParser getParser(String extension) {
+    public FileParser getParser(IngestionFormat format) {
         return parsers.stream()
-                .filter(parser -> parser.supports(extension))
+                .filter(parser -> parser.supports(format))
                 .findFirst()
-                .orElseThrow(() -> new UnsupportedFileFormatException(extension));
+                .orElseThrow(() -> new UnsupportedFileFormatException(format.name().toLowerCase()));
     }
 }
