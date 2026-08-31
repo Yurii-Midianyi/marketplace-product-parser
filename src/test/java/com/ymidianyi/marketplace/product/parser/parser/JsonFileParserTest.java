@@ -1,5 +1,7 @@
 package com.ymidianyi.marketplace.product.parser.parser;
 
+import com.ymidianyi.marketplace.product.parser.dto.IncomingProductExport;
+import com.ymidianyi.marketplace.product.parser.dto.IngestionFormat;
 import com.ymidianyi.marketplace.product.parser.dto.ProductDto;
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
 import com.ymidianyi.marketplace.product.parser.exception.JsonParsingException;
@@ -11,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import tools.jackson.core.JacksonException;
 
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,20 +37,23 @@ class JsonFileParserTest {
     }
 
     @Test
-    void shouldSupportJsonExtension() {
-        assertThat(parser.supports("json")).isTrue();
-        assertThat(parser.supports("JSON")).isTrue();
-        assertThat(parser.supports("csv")).isFalse();
+    void shouldSupportJsonFormat() {
+        assertThat(parser.supports(IngestionFormat.JSON)).isTrue();
+        assertThat(parser.supports(IngestionFormat.CSV)).isFalse();
     }
 
     @Test
-    void shouldParseValidJsonWithAllFields() throws URISyntaxException {
-        Path file = getResourcePath("valid_all_fields.json");
+    void shouldParseValidJsonWithAllFields() throws Exception {
+        IncomingProductExport incomingProductExport = incomingExport(
+                "valid_all_fields.json",
+                "PARTNER-A",
+                LocalDate.of(2026, 3, 23)
+        );
 
-        ProductExportFileDto result = parser.parse(file);
+        ProductExportFileDto result = parser.parse(incomingProductExport);
 
         assertThat(result.partnerId()).isEqualTo("PARTNER-A");
-        assertThat(result.exportDate()).isEqualTo(Instant.parse("2026-03-23T10:30:00Z"));
+        assertThat(result.exportDate()).isEqualTo(Instant.parse("2026-03-23T00:00:00Z"));
         assertThat(result.products()).hasSize(1);
 
         ProductDto product = result.products().getFirst();
@@ -64,11 +70,17 @@ class JsonFileParserTest {
     }
 
     @Test
-    void shouldParseJsonWithOptionalFieldsNull() throws URISyntaxException {
-        Path file = getResourcePath("valid_minimal_fields.json");
+    void shouldParseJsonWithOptionalFieldsNull() throws Exception {
+        IncomingProductExport incomingProductExport = incomingExport(
+                "valid_minimal_fields.json",
+                "PARTNER-OVERRIDE",
+                LocalDate.of(2026, 3, 24)
+        );
 
-        ProductExportFileDto result = parser.parse(file);
+        ProductExportFileDto result = parser.parse(incomingProductExport);
 
+        assertThat(result.partnerId()).isEqualTo("PARTNER-OVERRIDE");
+        assertThat(result.exportDate()).isEqualTo(Instant.parse("2026-03-24T00:00:00Z"));
         ProductDto product = result.products().getFirst();
         assertThat(product.specialPrice()).isNull();
         assertThat(product.specialFrom()).isNull();
@@ -79,12 +91,27 @@ class JsonFileParserTest {
     }
 
     @Test
-    void shouldThrowJsonParsingExceptionOnMalformedContent() throws URISyntaxException {
-        Path file = getResourcePath("malformed.json");
+    void shouldThrowJsonParsingExceptionOnMalformedContent() throws Exception {
+        IncomingProductExport incomingProductExport = incomingExport(
+                "malformed.json",
+                "PARTNER-A",
+                LocalDate.of(2026, 3, 23)
+        );
 
-        assertThatThrownBy(() -> parser.parse(file))
+        assertThatThrownBy(() -> parser.parse(incomingProductExport))
                 .isInstanceOf(JsonParsingException.class)
                 .hasMessageContaining("malformed.json")
                 .hasCauseInstanceOf(JacksonException.class);
+    }
+
+    private IncomingProductExport incomingExport(String resourceName, String partnerId, LocalDate exportDate) throws Exception {
+        Path file = getResourcePath(resourceName);
+        return new IncomingProductExport(
+                partnerId,
+                exportDate,
+                IngestionFormat.JSON,
+                file.getFileName().toString(),
+                Files.readString(file)
+        );
     }
 }

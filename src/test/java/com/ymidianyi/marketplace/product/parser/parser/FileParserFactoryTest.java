@@ -1,5 +1,6 @@
 package com.ymidianyi.marketplace.product.parser.parser;
 
+import com.ymidianyi.marketplace.product.parser.dto.IngestionFormat;
 import com.ymidianyi.marketplace.product.parser.exception.UnsupportedFileFormatException;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -23,27 +24,27 @@ class FileParserFactoryTest {
         jsonParser = mock(FileParser.class);
         csvParser = mock(FileParser.class);
 
-        when(jsonParser.supports("json")).thenReturn(true);
-        when(csvParser.supports("csv")).thenReturn(true);
+        when(jsonParser.supports(IngestionFormat.JSON)).thenReturn(true);
+        when(csvParser.supports(IngestionFormat.CSV)).thenReturn(true);
 
         factory = new FileParserFactory(List.of(jsonParser, csvParser));
     }
 
     @Test
     void shouldReturnJsonParserForJsonExtension() {
-        FileParser result = factory.getParser("json");
+        FileParser result = factory.getParser(IngestionFormat.JSON);
         assertThat(result).isSameAs(jsonParser);
     }
 
     @Test
     void shouldReturnCsvParserForCsvExtension() {
-        FileParser result = factory.getParser("csv");
+        FileParser result = factory.getParser(IngestionFormat.CSV);
         assertThat(result).isSameAs(csvParser);
     }
 
     @Test
     void shouldThrowForUnsupportedExtension() {
-        assertThatThrownBy(() -> factory.getParser("xml"))
+        assertThatThrownBy(() -> factory.getParser(IngestionFormat.fromValue("xml")))
                 .isInstanceOf(UnsupportedFileFormatException.class)
                 .hasMessageContaining("xml");
     }
