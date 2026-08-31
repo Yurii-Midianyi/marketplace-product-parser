@@ -18,9 +18,25 @@ spring:
       enabled: false
   kafka:
     bootstrap-servers: localhost:19092
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+    listener:
+      ack-mode: record
+      auto-startup: false
+      missing-topics-fatal: false
 
 app:
   kafka:
+    incoming-topic: product.exports.incoming
+    consumer-group-id: marketplace-product-parser-test
+    incoming-dlt-topic: product.exports.incoming.dlt
+    incoming-auto-startup: false
+    incoming-concurrency: 1
+    incoming-retry-backoff-ms: 0
+    incoming-max-retries: 0
     product-upserted-topic: product.upserted
 
 file-processing:
