@@ -1,30 +1,26 @@
 package com.ymidianyi.marketplace.product.parser.processor;
 
-import com.ymidianyi.marketplace.product.parser.dto.ProductDto;
-import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
-import com.ymidianyi.marketplace.product.parser.exception.JsonParsingException;
-import com.ymidianyi.marketplace.product.parser.model.ProductState;
-import com.ymidianyi.marketplace.product.parser.parser.FileParser;
-import com.ymidianyi.marketplace.product.parser.parser.FileParserFactory;
+import com.ymidianyi.marketplace.product.parser.dto.FileNameMetadata;
+import com.ymidianyi.marketplace.product.parser.dto.IncomingProductExport;
+import com.ymidianyi.marketplace.product.parser.dto.IngestionFormat;
+import com.ymidianyi.marketplace.product.parser.parser.FileNameParser;
+import com.ymidianyi.marketplace.product.parser.service.ProductExportProcessingService;
 import com.ymidianyi.marketplace.product.parser.scanner.FileMover;
-import com.ymidianyi.marketplace.product.parser.service.ProductImportService;
-import com.ymidianyi.marketplace.product.parser.validation.ProductExportValidator;
-import com.ymidianyi.marketplace.product.parser.validation.ValidationResult;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class SingleFileProcessorTest {
@@ -32,89 +28,91 @@ class SingleFileProcessorTest {
     @TempDir
     Path tempDir;
 
-    private FileParserFactory parserFactory;
-    private FileParser fileParser;
-    private ProductExportValidator validator;
-    private ProductImportService importService;
+    private ProductExportProcessingService processingService;
     private FileMover fileMover;
+    private FileNameParser fileNameParser;
 
     private SingleFileProcessor processor;
 
     @BeforeEach
     void setUp() {
-        parserFactory = mock(FileParserFactory.class);
-        fileParser = mock(FileParser.class);
-        validator = mock(ProductExportValidator.class);
-        importService = mock(ProductImportService.class);
+        processingService = mock(ProductExportProcessingService.class);
         fileMover = mock(FileMover.class);
+        fileNameParser = mock(FileNameParser.class);
 
-        processor = new SingleFileProcessor(parserFactory, validator, importService, fileMover);
+        processor = new SingleFileProcessor(processingService, fileMover, fileNameParser);
     }
 
     @Test
     void process_validFile_returnsSuccessAndMovesToProcessed() throws IOException {
-        Path file = Files.writeString(tempDir.resolve("products.json"), "{}");
-        ProductExportFileDto dto = validDto();
+        Path file = Files.writeString(tempDir.resolve("products_PARTNER-A_2026-03-23.json"), "{\"products\":[]}");
 
-        when(parserFactory.getParser("json")).thenReturn(fileParser);
-        when(fileParser.parse(file)).thenReturn(dto);
-        when(validator.validate(dto)).thenReturn(ValidationResult.ok());
+        when(fileNameParser.parse("products_PARTNER-A_2026-03-23.json"))
+                .thenReturn(new FileNameMetadata("PARTNER-A", LocalDate.of(2026, 3, 23)));
+        when(processingService.process(any(IncomingProductExport.class)))
+                .thenReturn(ProcessingResult.success("products_PARTNER-A_2026-03-23.json"));
 
         ProcessingResult result = processor.process(file);
 
         assertThat(result.status()).isEqualTo(ProcessingStatus.SUCCESS);
-        assertThat(result.fileName()).isEqualTo("products.json");
+        assertThat(result.fileName()).isEqualTo("products_PARTNER-A_2026-03-23.json");
         assertThat(result.errors()).isEmpty();
 
-        verify(importService).importProducts(dto, "products.json");
         verify(fileMover).moveToProcessed(file);
         verify(fileMover, never()).moveToFailed(any(), anyString());
+        verify(processingService).process(eq(new IncomingProductExport(
+                "PARTNER-A",
+                LocalDate.of(2026, 3, 23),
+                IngestionFormat.JSON,
+                "products_PARTNER-A_2026-03-23.json",
+                "{\"products\":[]}"
+        )));
     }
 
     @Test
     void process_invalidFile_returnsValidationErrorAndMovesToFailed() throws IOException {
-        Path file = Files.writeString(tempDir.resolve("bad.csv"), "data");
-        ProductExportFileDto dto = validDto();
+        Path file = Files.writeString(tempDir.resolve("products_PARTNER-A_2026-03-23.csv"), "data");
         List<String> errors = List.of("name: must not be blank", "price: must be positive");
 
-        when(parserFactory.getParser("csv")).thenReturn(fileParser);
-        when(fileParser.parse(file)).thenReturn(dto);
-        when(validator.validate(dto)).thenReturn(ValidationResult.invalid(errors));
+        when(fileNameParser.parse("products_PARTNER-A_2026-03-23.csv"))
+                .thenReturn(new FileNameMetadata("PARTNER-A", LocalDate.of(2026, 3, 23)));
+        when(processingService.process(any(IncomingProductExport.class)))
+                .thenReturn(ProcessingResult.validationError("products_PARTNER-A_2026-03-23.csv", errors));
 
         ProcessingResult result = processor.process(file);
 
         assertThat(result.status()).isEqualTo(ProcessingStatus.VALIDATION_ERROR);
-        assertThat(result.fileName()).isEqualTo("bad.csv");
+        assertThat(result.fileName()).isEqualTo("products_PARTNER-A_2026-03-23.csv");
         assertThat(result.errors()).containsExactlyElementsOf(errors);
-
         verify(fileMover).moveToFailed(eq(file), anyString());
-        verify(importService, never()).importProducts(any(), anyString());
         verify(fileMover, never()).moveToProcessed(any());
     }
 
     @Test
     void process_parseException_returnsParseErrorAndMovesToFailed() throws IOException {
-        Path file = Files.writeString(tempDir.resolve("corrupt.json"), "not-json");
+        Path file = Files.writeString(tempDir.resolve("products_PARTNER-A_2026-03-23.json"), "not-json");
 
-        when(parserFactory.getParser("json")).thenReturn(fileParser);
-        when(fileParser.parse(file)).thenThrow(new JsonParsingException("Unexpected end of input", null));
+        when(fileNameParser.parse("products_PARTNER-A_2026-03-23.json"))
+                .thenReturn(new FileNameMetadata("PARTNER-A", LocalDate.of(2026, 3, 23)));
+        when(processingService.process(any(IncomingProductExport.class)))
+                .thenReturn(ProcessingResult.parseError("products_PARTNER-A_2026-03-23.json", "Unexpected end of input"));
 
         ProcessingResult result = processor.process(file);
 
         assertThat(result.status()).isEqualTo(ProcessingStatus.PARSE_ERROR);
-        assertThat(result.fileName()).isEqualTo("corrupt.json");
+        assertThat(result.fileName()).isEqualTo("products_PARTNER-A_2026-03-23.json");
         assertThat(result.errors()).hasSize(1);
-
         verify(fileMover).moveToFailed(eq(file), anyString());
-        verify(importService, never()).importProducts(any(), anyString());
     }
 
     @Test
     void process_parseExceptionAndMoveToFailedAlsoThrows_returnsParseErrorWithoutPropagating() throws IOException {
-        Path file = Files.writeString(tempDir.resolve("corrupt.json"), "bad");
+        Path file = Files.writeString(tempDir.resolve("products_PARTNER-A_2026-03-23.json"), "bad");
 
-        when(parserFactory.getParser("json")).thenReturn(fileParser);
-        when(fileParser.parse(file)).thenThrow(new JsonParsingException("parse failure", null));
+        when(fileNameParser.parse("products_PARTNER-A_2026-03-23.json"))
+                .thenReturn(new FileNameMetadata("PARTNER-A", LocalDate.of(2026, 3, 23)));
+        when(processingService.process(any(IncomingProductExport.class)))
+                .thenReturn(ProcessingResult.parseError("products_PARTNER-A_2026-03-23.json", "parse failure"));
         doThrow(new IOException("disk full")).when(fileMover).moveToFailed(any(), anyString());
 
         ProcessingResult result = processor.process(file);
@@ -125,21 +123,28 @@ class SingleFileProcessorTest {
 
     @Test
     void process_unsupportedExtension_returnsParseErrorWithoutCallingImportService() throws IOException {
-        Path file = Files.writeString(tempDir.resolve("catalog.xml"), "<xml/>");
-
-        when(parserFactory.getParser("xml"))
-                .thenThrow(new com.ymidianyi.marketplace.product.parser.exception.UnsupportedFileFormatException("xml"));
+        Path file = Files.writeString(tempDir.resolve("products_PARTNER-A_2026-03-23.xml"), "<xml/>");
 
         ProcessingResult result = processor.process(file);
 
         assertThat(result.status()).isEqualTo(ProcessingStatus.PARSE_ERROR);
-        verify(importService, never()).importProducts(any(), anyString());
+        verify(processingService, never()).process(any());
+        verify(fileMover).moveToFailed(eq(file), anyString());
     }
 
-    private ProductExportFileDto validDto() {
-        ProductDto product = new ProductDto(
-                "Apple Fruit", "SKU-001", BigDecimal.valueOf(100), null,
-                null, null, ProductState.ACTIVE, null, List.of(), null);
-        return new ProductExportFileDto("PARTNER-A", Instant.now(), List.of(product));
+    @Test
+    void process_invalidFileName_returnsParseErrorWithoutDelegatingToCore() throws IOException {
+        Path file = Files.writeString(tempDir.resolve("invalid_name.json"), "{\"products\":[]}");
+
+        when(fileNameParser.parse("invalid_name.json"))
+                .thenThrow(new IllegalArgumentException("invalid file name"));
+
+        ProcessingResult result = processor.process(file);
+
+        assertThat(result.status()).isEqualTo(ProcessingStatus.PARSE_ERROR);
+        assertThat(result.fileName()).isEqualTo("invalid_name.json");
+        assertThat(result.errors().getFirst()).contains("invalid file name");
+        verify(processingService, never()).process(any());
+        verify(fileMover).moveToFailed(eq(file), anyString());
     }
 }
