@@ -19,6 +19,14 @@ spring:
   kafka:
     # 9092 is by the embedded H2 server, so use 19092.
     bootstrap-servers: localhost:19092
+    consumer:
+      key-deserializer: orh.apache.kafka.common.serialization.StringSerializer
+      value-deserializer: prg.apache.kafka.common.serialization.StringSerializer
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+    listener:
+      ack-mode: record
+      missing-topics-fatal: false
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -29,6 +37,13 @@ spring:
 app:
   kafka:
     product-upserted-topic: product.upserted
+    incoming-topic: product.exports.incoming
+    consumer-group-id: marketplace-product-parser
+    incoming-dlt-topic: product.exports.incoming.dlt
+    incoming-auto-startup: true
+    incoming-concurrency: 1
+    incoming-retry-backoff-ms: 1000
+    incoming-max-retries: 2
 
 file-processing:
   input-dir: "data/input-folder"
