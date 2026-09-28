@@ -1,11 +1,15 @@
 package com.ymidianyi.marketplace.product.parser.parser;
 
+import com.ymidianyi.marketplace.product.parser.dto.IncomingProductExport;
+import com.ymidianyi.marketplace.product.parser.dto.IngestionFormat;
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
 import com.ymidianyi.marketplace.product.parser.exception.JsonParsingException;
 
 import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.ZoneOffset;
+
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
@@ -21,18 +25,23 @@ public class JsonFileParser implements FileParser {
     }
 
     @Override
-    public ProductExportFileDto parse(Path file) throws IOException {
-        log.debug("Parsing JSON file: {}", file.getFileName());
+    public ProductExportFileDto parse(IncomingProductExport incomingProductExport) {
+        log.debug("Parsing JSON file: {}", FileParser.sourceRef(incomingProductExport));
         try {
-            return objectMapper.readValue(file, ProductExportFileDto.class);
+            ProductExportFileDto parsed = objectMapper.readValue(incomingProductExport.payload(), ProductExportFileDto.class);
+            return new ProductExportFileDto(
+                    incomingProductExport.partnerId(),
+                    incomingProductExport.exportDate().atStartOfDay(ZoneOffset.UTC).toInstant(),
+                    parsed.products()
+            );
         } catch (JacksonException e) {
-            log.error("Failed to parse JSON file {}: {}", file.getFileName(), e.getMessage());
-            throw new JsonParsingException("Failed to parse JSON file: " + file.getFileName(), e);
+            log.error("Failed to parse JSON file {}: {}", FileParser.sourceRef(incomingProductExport), e.getMessage());
+            throw new JsonParsingException("Failed to parse JSON file: " + FileParser.sourceRef(incomingProductExport), e);
         }
     }
 
     @Override
-    public boolean supports(String fileExtension) {
-        return fileExtension.equalsIgnoreCase("json");
+    public boolean supports(IngestionFormat format) {
+        return format == IngestionFormat.JSON;
     }
 }

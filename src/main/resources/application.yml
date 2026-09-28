@@ -20,8 +20,8 @@ spring:
     # 9092 is by the embedded H2 server, so use 19092.
     bootstrap-servers: localhost:19092
     consumer:
-      key-deserializer: orh.apache.kafka.common.serialization.StringSerializer
-      value-deserializer: prg.apache.kafka.common.serialization.StringSerializer
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       auto-offset-reset: earliest
       enable-auto-commit: false
     listener:
