@@ -3,11 +3,11 @@ package com.ymidianyi.marketplace.product.parser.service;
 import com.ymidianyi.marketplace.product.parser.TestUtilities;
 import com.ymidianyi.marketplace.product.parser.dto.ProductDto;
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
+import com.ymidianyi.marketplace.product.parser.messaging.ProductEventPublisher;
 import com.ymidianyi.marketplace.product.parser.model.Product;
 import com.ymidianyi.marketplace.product.parser.model.ProductState;
 import com.ymidianyi.marketplace.product.parser.repository.CategoryRepository;
 import com.ymidianyi.marketplace.product.parser.repository.ProductRepository;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @DataJpaTest
-@Import(ProductImportService.class)
+@Import({ProductImportService.class, CategoryService.class, CategoryInsertService.class})
 public class ProductImportServiceTest {
 
     @Autowired
@@ -36,6 +36,9 @@ public class ProductImportServiceTest {
 
     @MockitoBean
     Clock mockClock;
+
+    @MockitoBean
+    ProductEventPublisher productEventPublisher;
 
     @Test
     void persistAllFieldsOnImportTest() {
