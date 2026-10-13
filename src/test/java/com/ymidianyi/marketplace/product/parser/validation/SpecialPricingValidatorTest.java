@@ -23,7 +23,7 @@ public class SpecialPricingValidatorTest {
     @Test
     public void testValidateSpecialPriceWithoutSpecialDates(){
         ProductDto productDto = TestUtilities.createNotValidProduct();
-        ProductExportFileDto productExportFileDto = new ProductExportFileDto("Partner1", Instant.now(), List.of(productDto));
+        ProductExportFileDto productExportFileDto = new ProductExportFileDto("Partner1", LocalDate.now(), List.of(productDto));
         assertThat(specialPricingValidator.validate(productExportFileDto))
                 .isNotNull()
                 .extracting(ValidationResult::errors, as(LIST))
@@ -47,7 +47,7 @@ public class SpecialPricingValidatorTest {
                 null,
                 null
         );
-        ProductExportFileDto productExportFileDto = new ProductExportFileDto("Partner1", Instant.now(), List.of(productDto));
+        ProductExportFileDto productExportFileDto = new ProductExportFileDto("Partner1", LocalDate.now(), List.of(productDto));
         assertThat(specialPricingValidator.validate(productExportFileDto))
                 .isNotNull()
                 .extracting(ValidationResult::errors, as(LIST))
@@ -73,7 +73,7 @@ public class SpecialPricingValidatorTest {
                 null,
                 null
         );
-        ProductExportFileDto productExportFileDto = new ProductExportFileDto("Partner1", Instant.now(), List.of(productDto));
+        ProductExportFileDto productExportFileDto = new ProductExportFileDto("Partner1", LocalDate.now(), List.of(productDto));
         assertThat(specialPricingValidator.validate(productExportFileDto))
                 .isNotNull()
                 .extracting(ValidationResult::errors, as(LIST))
@@ -94,7 +94,7 @@ public class SpecialPricingValidatorTest {
                 null,
                 null
         );
-        ProductExportFileDto productExportFileDto = new ProductExportFileDto("Partner1", Instant.now(), List.of(productDto));
+        ProductExportFileDto productExportFileDto = new ProductExportFileDto("Partner1", LocalDate.now(), List.of(productDto));
         assertThat(specialPricingValidator.validate(productExportFileDto))
                 .isNotNull()
                 .extracting(ValidationResult::errors, as(LIST))

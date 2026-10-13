@@ -31,7 +31,7 @@ public class JsonFileParser implements FileParser {
             ProductExportFileDto parsed = objectMapper.readValue(incomingProductExport.payload(), ProductExportFileDto.class);
             return new ProductExportFileDto(
                     incomingProductExport.partnerId(),
-                    incomingProductExport.exportDate().atStartOfDay(ZoneOffset.UTC).toInstant(),
+                    incomingProductExport.exportDate(),
                     parsed.products()
             );
         } catch (JacksonException e) {

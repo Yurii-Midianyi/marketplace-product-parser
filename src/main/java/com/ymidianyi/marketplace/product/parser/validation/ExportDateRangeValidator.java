@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 @Component
 public class ExportDateRangeValidator implements ProductExportValidator{
@@ -30,11 +32,12 @@ public class ExportDateRangeValidator implements ProductExportValidator{
             return ValidationResult.ok();
         }
         Instant now = clock.instant();
-        if(dto.exportDate().isAfter(now)){
+        LocalDate today = LocalDate.ofInstant(now, ZoneId.of("UTC"));
+        if(dto.exportDate().isAfter(today)){
             return ValidationResult.invalid("Export date can not be after the current date");
         }
 
-        if(now.minus(Duration.ofDays(maxExportAge)).isAfter(dto.exportDate())){
+        if(today.minusDays(maxExportAge).isAfter(dto.exportDate())){
             return ValidationResult.invalid("The file is older then allowed max export age");
         }
        return ValidationResult.ok();

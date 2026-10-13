@@ -47,7 +47,7 @@ public class SingleFileProcessorTest {
     void testProcessSuccessfulFile() throws IOException {
         Path file = Files.writeString(tempDir.resolve("product.json"), "{payload}");
         ProductExportFileDto dto = TestUtilities.createValidProductExportFileDto();
-        when(fileNameParser.parseFileName(any())).thenReturn(new FileNameMetadata(dto.partnerId(), LocalDate.ofInstant(dto.exportDate(), ZoneOffset.UTC)));
+        when(fileNameParser.parseFileName(any())).thenReturn(new FileNameMetadata(dto.partnerId(), dto.exportDate()));
         when(processingService.process(any())).thenReturn(ProcessingResult.success("product.json"));
 
         ProcessingResult result = singleFileProcessor.process(file);
@@ -70,7 +70,7 @@ public class SingleFileProcessorTest {
         ProductExportFileDto dto = TestUtilities.createValidProductExportFileDto();
         List<String> errors = List.of("name: must not be blank", "price: must be positive");
 
-        when(fileNameParser.parseFileName(any())).thenReturn(new FileNameMetadata(dto.partnerId(), LocalDate.ofInstant(dto.exportDate(), ZoneOffset.UTC)));
+        when(fileNameParser.parseFileName(any())).thenReturn(new FileNameMetadata(dto.partnerId(), dto.exportDate()));
         when(processingService.process(any())).thenReturn(ProcessingResult.validationError("product.json",errors));
 
         ProcessingResult result = singleFileProcessor.process(file);

@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -30,7 +31,7 @@ public class CompositeProductExportValidatorTest {
     public void testValidateWithValidProductExportFileDto() {
         ProductDto productDto = TestUtilities.createCheeseProduct();
         when(mockClock.instant()).thenReturn(Instant.parse("2026-05-22T20:07:51Z"));
-        ProductExportFileDto dto = new ProductExportFileDto("TestPartner", Instant.parse("2026-05-20T20:07:51Z"), List.of(productDto));
+        ProductExportFileDto dto = new ProductExportFileDto("TestPartner", LocalDate.parse("2026-05-20"), List.of(productDto));
         assertThat(validator.validate(dto))
                 .isNotNull()
                 .extracting(ValidationResult::errors, as(LIST))
@@ -40,8 +41,8 @@ public class CompositeProductExportValidatorTest {
     @Test
     public void testValidateWithInvalidProductExportFileDto() {
         ProductDto productDto = TestUtilities.createNotValidProduct();
-        Instant oldInstant = Instant.parse("2019-08-20T00:00:00Z");
-        ProductExportFileDto dto = new ProductExportFileDto("TestPartner", oldInstant, List.of(productDto));
+        LocalDate oldDate = LocalDate.parse("2019-08-20");
+        ProductExportFileDto dto = new ProductExportFileDto("TestPartner", oldDate, List.of(productDto));
         when(mockClock.instant()).thenReturn(Instant.parse("2026-05-22T20:07:51Z"));
         assertThat(validator.validate(dto))
                 .isNotNull()

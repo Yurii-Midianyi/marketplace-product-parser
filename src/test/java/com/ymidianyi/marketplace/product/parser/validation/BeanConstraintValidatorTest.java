@@ -5,6 +5,7 @@ import com.ymidianyi.marketplace.product.parser.dto.ProductDto;
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
 import org.junit.jupiter.api.Test;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -20,7 +21,7 @@ public class BeanConstraintValidatorTest {
     @Test
     public void testValidateEmptyPartnerId() {
         List<ProductDto> products = List.of(TestUtilities.createCheeseProduct());
-        ProductExportFileDto NoPartnerDto = new ProductExportFileDto(null, Instant.now(), products);
+        ProductExportFileDto NoPartnerDto = new ProductExportFileDto(null, LocalDate.now(), products);
 
         assertThat(beanConstraintValidator.validate(NoPartnerDto))
                 .isNotNull()
@@ -32,7 +33,7 @@ public class BeanConstraintValidatorTest {
     @Test
     public void testValidateValidDto() {
         List<ProductDto> products = List.of(TestUtilities.createCheeseProduct());
-        ProductExportFileDto NoPartnerDto = new ProductExportFileDto("PartnerA", Instant.now(), products);
+        ProductExportFileDto NoPartnerDto = new ProductExportFileDto("PartnerA", LocalDate.now(), products);
 
         assertThat(beanConstraintValidator.validate(NoPartnerDto))
                 .isNotNull()
@@ -42,7 +43,7 @@ public class BeanConstraintValidatorTest {
     @Test
     public void testValidateProductNoName() {
         List<ProductDto> products = List.of(TestUtilities.createCheeseProduct(), TestUtilities.createNotValidProduct());
-        ProductExportFileDto NoPartnerDto = new ProductExportFileDto("PartnerA", Instant.now(), products);
+        ProductExportFileDto NoPartnerDto = new ProductExportFileDto("PartnerA", LocalDate.now(), products);
 
         assertThat(beanConstraintValidator.validate(NoPartnerDto))
                 .isNotNull()

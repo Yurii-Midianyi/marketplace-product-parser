@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -33,7 +34,7 @@ public class ExportDateRangeValidatorTest {
     @Test
     public void testValidateExportDateInFuture() throws  Exception {
         List<ProductDto> products = List.of(TestUtilities.createCheeseProduct());
-        ProductExportFileDto NoPartnerDto = new ProductExportFileDto("PartnerA", Instant.now(), products);
+        ProductExportFileDto NoPartnerDto = new ProductExportFileDto("PartnerA", LocalDate.now(), products);
         assertThat(validator.validate(NoPartnerDto))
                 .isNotNull()
                 .extracting(ValidationResult::errors, as(LIST))
@@ -45,7 +46,8 @@ public class ExportDateRangeValidatorTest {
     public void testValidateExportDateOlderThan30Days() throws  Exception {
         List<ProductDto> products = List.of(TestUtilities.createCheeseProduct());
         ProductExportFileDto NoPartnerDto =
-                new ProductExportFileDto("PartnerA", fixedClock.instant().minus(properties.getMaxExportAgeDays()+1, ChronoUnit.DAYS), products);
+                new ProductExportFileDto("PartnerA",LocalDate.now(fixedClock)
+                        .minusDays(properties.getMaxExportAgeDays() + 1), products);
         assertThat(validator.validate(NoPartnerDto))
                 .isNotNull()
                 .extracting(ValidationResult::errors, as(LIST))

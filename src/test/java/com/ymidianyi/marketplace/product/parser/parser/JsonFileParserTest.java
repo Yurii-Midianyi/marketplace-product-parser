@@ -61,7 +61,7 @@ public class JsonFileParserTest {
         ProductExportFileDto productExportFileDto = parser.parse(getIncomingProductExport("valid_all_fields.json"));
         assertThat(productExportFileDto).isNotNull();
         assertThat(productExportFileDto.partnerId()).isEqualTo("PARTNER-A");
-        assertThat(productExportFileDto.exportDate()).isEqualTo(Instant.parse("2026-03-23T00:00:00Z"));
+        assertThat(productExportFileDto.exportDate()).isEqualTo("2026-03-23");
         assertThat(productExportFileDto.products()).hasSize(1);
 
         ProductDto productDto = productExportFileDto.products().getFirst();
@@ -83,7 +83,7 @@ public class JsonFileParserTest {
         ProductExportFileDto productExportFileDto = parser.parse(getIncomingProductExport("valid_minimal_fields.json"));
         assertThat(productExportFileDto).isNotNull();
         assertThat(productExportFileDto.partnerId()).isEqualTo("PARTNER-B");
-        assertThat(productExportFileDto.exportDate()).isEqualTo(Instant.parse("2026-03-20T00:00:00Z"));
+        assertThat(productExportFileDto.exportDate()).isEqualTo("2026-03-20");
         assertThat(productExportFileDto.products()).hasSize(1);
 
         ProductDto productDto = productExportFileDto.products().getFirst();

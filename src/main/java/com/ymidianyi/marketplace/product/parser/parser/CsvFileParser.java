@@ -49,7 +49,7 @@ public class CsvFileParser implements FileParser {
 
         return new ProductExportFileDto(
                 incomingProductExport.partnerId(),
-                incomingProductExport.exportDate().atStartOfDay(ZoneOffset.UTC).toInstant(),
+                incomingProductExport.exportDate(),
                 products);
     }
 

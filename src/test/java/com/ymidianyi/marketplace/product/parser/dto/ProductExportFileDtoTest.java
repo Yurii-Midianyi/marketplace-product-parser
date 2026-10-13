@@ -25,26 +25,26 @@ public class ProductExportFileDtoTest {
         String content = """
             {
                 "partnerId": "123",
-                "exportDate": "2026-04-17T18:00:00z"
+                "exportDate": "2026-04-17"
             }
             """;
         ProductExportFileDto result = json.parseObject(content);
 
         assertEquals("123", result.partnerId());
-        assertEquals(Instant.parse("2026-04-17T18:00:00z"), result.exportDate());
+        assertEquals("2026-04-17", result.exportDate().toString());
     }
 
     @Test
     void testSerialization() throws IOException {
         ProductDto firstProduct = new ProductDto("test1", "aaa", BigDecimal.ONE, new BigDecimal(55), LocalDate.now(), null, null, null, null, null);
         List<ProductDto> products = new ArrayList<>(Collections.singleton(firstProduct));
-        Instant instant = Instant.parse("2026-04-17T18:00:00Z");
-        ProductExportFileDto dto = new ProductExportFileDto("123", instant, products);
+        LocalDate date = LocalDate.parse("2026-04-17");
+        ProductExportFileDto dto = new ProductExportFileDto("123", date, products);
 
         String expectedJson = """
             {
                 "partnerId": "123",
-                "exportDate": "2026-04-17T18:00:00Z",
+                "exportDate": "2026-04-17",
                 "products": [
                     {
                         "name": "test1",
