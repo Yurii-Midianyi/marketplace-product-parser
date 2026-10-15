@@ -1,5 +1,6 @@
 package com.ymidianyi.marketplace.product.parser.parser;
 
+import com.ymidianyi.marketplace.product.parser.dto.IngestionFormat;
 import com.ymidianyi.marketplace.product.parser.exception.UnsupportedFileFormatException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,19 +16,19 @@ public class FileParserFactoryTest {
 
     @Test
     public void testFileParserFactory() {
-        FileParser jsonParser = fileParserFactory.getParser("json");
+        FileParser jsonParser = fileParserFactory.getParser(IngestionFormat.JSON);
         assertThat(jsonParser).isNotNull();
         assertThat(jsonParser).isInstanceOf(JsonFileParser.class);
-        FileParser csvParser = fileParserFactory.getParser("csv");
+        FileParser csvParser = fileParserFactory.getParser(IngestionFormat.CSV);
         assertThat(csvParser).isNotNull();
         assertThat(csvParser).isInstanceOf(CsvFileParser.class);
     }
 
     @Test
     public void testThrowExceptionOnInvalidExtension() {
-        assertThatThrownBy(()->fileParserFactory.getParser("xml"))
+        assertThatThrownBy(()->fileParserFactory.getParser(IngestionFormat.fromValue("xml")))
                 .isInstanceOf(UnsupportedFileFormatException.class)
-                .hasMessage("Extension not supported: xml");
+                .hasMessage("xml");
     }
 
 }

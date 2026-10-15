@@ -6,7 +6,6 @@ import com.ymidianyi.marketplace.product.parser.event.ProductUpsertedEvent;
 import com.ymidianyi.marketplace.product.parser.messaging.ProductEventPublisher;
 import com.ymidianyi.marketplace.product.parser.model.Category;
 import com.ymidianyi.marketplace.product.parser.model.Product;
-import com.ymidianyi.marketplace.product.parser.repository.CategoryRepository;
 import com.ymidianyi.marketplace.product.parser.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 import java.time.Clock;
@@ -21,16 +20,16 @@ import jakarta.transaction.Transactional;
 @Transactional
 public class ProductImportService {
 
-    private final Clock clock;
     private final ProductRepository productRepository;
-    private final CategoryRepository categoryRepository;
+    private final CategoryService categoryService;
     private final ProductEventPublisher productEventPublisher;
+    private final Clock clock;
 
-    public ProductImportService(Clock clock, ProductRepository productRepository, CategoryRepository categoryRepository, ProductEventPublisher productEventPublisher) {
+    public ProductImportService(Clock clock, ProductRepository productRepository, ProductEventPublisher productEventPublisher, CategoryService categoryService) {
         this.clock = clock;
         this.productRepository = productRepository;
-        this.categoryRepository = categoryRepository;
         this.productEventPublisher = productEventPublisher;
+        this.categoryService = categoryService;
     }
 
     public void importProducts(ProductExportFileDto productExportFileDto, String sourceFileName) {
@@ -72,8 +71,7 @@ public class ProductImportService {
         }
         return names.stream()
                 .filter(name-> name != null && !name.isBlank())
-                .map(name -> categoryRepository.findByName(name)
-                        .orElseGet(() -> new Category(name)))
+                .map(categoryService::getOrCreate)
                 .collect(Collectors.toSet());
 
     }

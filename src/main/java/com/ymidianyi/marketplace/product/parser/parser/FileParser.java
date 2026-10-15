@@ -1,5 +1,7 @@
 package com.ymidianyi.marketplace.product.parser.parser;
 
+import com.ymidianyi.marketplace.product.parser.dto.IncomingProductExport;
+import com.ymidianyi.marketplace.product.parser.dto.IngestionFormat;
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
 
 import java.io.IOException;
@@ -7,12 +9,11 @@ import java.nio.file.Path;
 
 public interface FileParser {
 
-    ProductExportFileDto parse(Path file) throws IOException;
+    ProductExportFileDto parse(IncomingProductExport incomingProductExport);
 
-    boolean supports(String fileExtension);
+    boolean supports(IngestionFormat format);
 
-    static String extensionOf(String fileName) {
-        int dot = fileName.lastIndexOf('.');
-        return dot >= 0 ? fileName.substring(dot + 1).toLowerCase() : "";
+    static String sourceRef(IncomingProductExport incomingProductExport) {
+        return incomingProductExport.sourceRef() != null ? incomingProductExport.sourceRef() : "unknown";
     }
 }

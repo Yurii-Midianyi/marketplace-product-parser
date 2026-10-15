@@ -65,7 +65,7 @@ public class TestUtilities {
         ProductDto product = new ProductDto(
                 "Apple Fruit", "SKU-001", BigDecimal.valueOf(100), null,
                 null, null, ProductState.ACTIVE, null, List.of(), null);
-        return new ProductExportFileDto("PARTNER-A", Instant.parse("2026-05-22T20:07:51Z"), List.of(product));
+        return new ProductExportFileDto("PARTNER-A", LocalDate.parse("2026-05-22"), List.of(product));
     }
 }
 

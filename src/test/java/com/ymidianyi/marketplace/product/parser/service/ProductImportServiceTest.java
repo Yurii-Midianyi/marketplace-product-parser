@@ -3,11 +3,11 @@ package com.ymidianyi.marketplace.product.parser.service;
 import com.ymidianyi.marketplace.product.parser.TestUtilities;
 import com.ymidianyi.marketplace.product.parser.dto.ProductDto;
 import com.ymidianyi.marketplace.product.parser.dto.ProductExportFileDto;
+import com.ymidianyi.marketplace.product.parser.messaging.ProductEventPublisher;
 import com.ymidianyi.marketplace.product.parser.model.Product;
 import com.ymidianyi.marketplace.product.parser.model.ProductState;
 import com.ymidianyi.marketplace.product.parser.repository.CategoryRepository;
 import com.ymidianyi.marketplace.product.parser.repository.ProductRepository;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -17,12 +17,13 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @DataJpaTest
-@Import(ProductImportService.class)
+@Import({ProductImportService.class, CategoryService.class, CategoryInsertService.class})
 public class ProductImportServiceTest {
 
     @Autowired
@@ -37,11 +38,15 @@ public class ProductImportServiceTest {
     @MockitoBean
     Clock mockClock;
 
+    @MockitoBean
+    ProductEventPublisher productEventPublisher;
+
     @Test
     void persistAllFieldsOnImportTest() {
         when(mockClock.instant()).thenReturn(Instant.parse("2026-05-22T20:07:51Z"));
+        when(mockClock.getZone()).thenReturn(ZoneOffset.UTC);
         List<ProductDto> products = List.of(TestUtilities.createFullyPopulatedProduct());
-        ProductExportFileDto productExportFileDto = new ProductExportFileDto("products_ABC", mockClock.instant(), products);
+        ProductExportFileDto productExportFileDto = new ProductExportFileDto("products_ABC", LocalDate.now(mockClock), products);
         productImportService.importProducts(productExportFileDto, "products_PARTNER-A_2026-03-23.csv");
 
         Product savedProduct = productRepository.findBySkuAndPartnerId("5890", "products_ABC").orElseThrow(AssertionError::new);
@@ -77,8 +82,9 @@ public class ProductImportServiceTest {
                 "https://nutritionsource.hsph.harvard.edu/icecream/"
         );
         when(mockClock.instant()).thenReturn(Instant.parse("2026-05-22T20:07:51Z"));
+        when(mockClock.getZone()).thenReturn(ZoneOffset.UTC);
         List<ProductDto> products = List.of(updatedProductDto);
-        ProductExportFileDto productExportFileDto = new ProductExportFileDto("products_FrozenFactory", mockClock.instant(), products);
+        ProductExportFileDto productExportFileDto = new ProductExportFileDto("products_FrozenFactory", LocalDate.now(mockClock), products);
         productImportService.importProducts(productExportFileDto, "products_PARTNER-A_2026-03-23.csv");
 
         Product savedProduct = productRepository.findBySkuAndPartnerId("5890", "products_FrozenFactory").orElseThrow(AssertionError::new);
@@ -114,8 +120,9 @@ public class ProductImportServiceTest {
                 "https://nutritionsource.hsph.harvard.edu/icecream/"
         );
         when(mockClock.instant()).thenReturn(Instant.parse("2026-05-22T20:07:51Z"));
+        when(mockClock.getZone()).thenReturn(ZoneOffset.UTC);
         List<ProductDto> products = List.of(updatedProductDto, TestUtilities.createFullyPopulatedProduct());
-        ProductExportFileDto productExportFileDto = new ProductExportFileDto("products_FrozenFactory", mockClock.instant(), products);
+        ProductExportFileDto productExportFileDto = new ProductExportFileDto("products_FrozenFactory", LocalDate.now(mockClock), products);
         productImportService.importProducts(productExportFileDto, "products_PARTNER-A_2026-03-23.csv");
 
         assertThat(productRepository.count()).isEqualTo(2);
